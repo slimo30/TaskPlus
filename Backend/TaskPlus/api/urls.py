@@ -11,12 +11,11 @@ urlpatterns = [
     path('members/', views.MemberListAPIView.as_view(), name='member-list'),
     path('workspaces/<int:workspace_pk>/members/', views.MemberInWorkspaceListView.as_view(), name='member-list'),
     path('join-workspace/', views.JoinWorkspaceAPIView.as_view(), name='join-workspace'),
-    path('join-workspace/', views.JoinWorkspaceAPIView.as_view(), name='join-workspace'),
     path('workspace/<int:workspace_id>/history/', views.WorkspaceHistoryAPIView.as_view(),),
 
     path('workspaces/', views.WorkspaceListView.as_view(), name='workspace-list'),
     path('workspaces/<int:pk>/', views.WorkspaceRetrieveView.as_view(), name='workspace-retrieve'),
-    path('workspaces/create/', views.WorkspaceCreateView.as_view(), name='workspace-create'),
+    path('workspaces/create/<int:member_id>/', views.WorkspaceCreateView.as_view(), name='create_workspace'),
 
     path('missions/', views.MissionListView.as_view(), name='mission-list'),
     path('missions/<int:pk>/', views.MissionDetailView.as_view(), name='mission-detail'),

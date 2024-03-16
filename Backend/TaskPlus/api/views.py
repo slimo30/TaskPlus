@@ -115,9 +115,27 @@ class WorkspaceRetrieveView(generics.RetrieveAPIView):
     queryset = Workspace.objects.all()
     serializer_class = WorkspaceSerializer1
 
+# This view is used to create a workspace and make the member creator as superuser and assign the workspace to the creator
+
 class WorkspaceCreateView(generics.CreateAPIView):
-    queryset = Workspace.objects.all()
     serializer_class = WorkspaceSerializer
+
+    def perform_create(self, serializer):
+        # Retrieve the member ID from the URL parameters
+        member_id = self.kwargs.get('member_id')
+
+        # Fetch the member instance using the provided member ID
+        member = Member.objects.get(pk=member_id)
+
+        # Create the workspace
+        workspace = serializer.save()
+
+        # Associate the workspace with the member
+        member.workspace = workspace
+        member.superuser = True
+        member.save()
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)        
 
 
 class MissionListView(generics.ListCreateAPIView):
