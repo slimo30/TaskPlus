@@ -44,37 +44,37 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAUbS8p9Zo6PNViSMauwnw7gSsWYw1be4o',
-    appId: '1:615559650193:web:a793218124db1ac9c41830',
-    messagingSenderId: '615559650193',
-    projectId: 'taskplus-64fb9',
-    authDomain: 'taskplus-64fb9.firebaseapp.com',
-    storageBucket: 'taskplus-64fb9.appspot.com',
+    apiKey: 'AIzaSyC4NB3Mx87ffIlEEEm3e5OapfWZrwzw3G4',
+    appId: '1:933927494037:web:59e0b85854efd2c9d6969c',
+    messagingSenderId: '933927494037',
+    projectId: 'taskplus-1ccf9',
+    authDomain: 'taskplus-1ccf9.firebaseapp.com',
+    storageBucket: 'taskplus-1ccf9.appspot.com',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDkFtkd0W5Ufch9ygq-CrAZZVj0HaXV9EE',
-    appId: '1:615559650193:android:ed71e50a924759bbc41830',
-    messagingSenderId: '615559650193',
-    projectId: 'taskplus-64fb9',
-    storageBucket: 'taskplus-64fb9.appspot.com',
+    apiKey: 'AIzaSyAsfFcWg71j44wyQCwyrzqmdD7qJjvXp4M',
+    appId: '1:933927494037:android:cc05479ab064814cd6969c',
+    messagingSenderId: '933927494037',
+    projectId: 'taskplus-1ccf9',
+    storageBucket: 'taskplus-1ccf9.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyAxth5KedOvxMiMK0s-T64gJfPi5ozG4So',
-    appId: '1:615559650193:ios:273f77bd67a0af91c41830',
-    messagingSenderId: '615559650193',
-    projectId: 'taskplus-64fb9',
-    storageBucket: 'taskplus-64fb9.appspot.com',
+    apiKey: 'AIzaSyByg3F91XBqM-V11AOyKg_a-CX_WFA9AsM',
+    appId: '1:933927494037:ios:8ae7522db8b9b6b8d6969c',
+    messagingSenderId: '933927494037',
+    projectId: 'taskplus-1ccf9',
+    storageBucket: 'taskplus-1ccf9.appspot.com',
     iosBundleId: 'com.example.taskplus',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyAxth5KedOvxMiMK0s-T64gJfPi5ozG4So',
-    appId: '1:615559650193:ios:4c23c587b4c9d15ec41830',
-    messagingSenderId: '615559650193',
-    projectId: 'taskplus-64fb9',
-    storageBucket: 'taskplus-64fb9.appspot.com',
+    apiKey: 'AIzaSyByg3F91XBqM-V11AOyKg_a-CX_WFA9AsM',
+    appId: '1:933927494037:ios:42d8a8ffbe15f465d6969c',
+    messagingSenderId: '933927494037',
+    projectId: 'taskplus-1ccf9',
+    storageBucket: 'taskplus-1ccf9.appspot.com',
     iosBundleId: 'com.example.taskplus.RunnerTests',
   );
 }

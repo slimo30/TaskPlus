@@ -1,7 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taskplus/Const/TextStyle.dart';
 import 'package:taskplus/Const/colors.dart';
+import 'package:taskplus/Const/link.dart';
+import 'package:taskplus/Controller/Authentification.dart';
+import 'package:taskplus/Controller/MmberServices.dart';
+import 'package:taskplus/Model/Member.dart';
+import 'package:taskplus/Model/user.dart';
+import 'package:taskplus/View/Screens/HomePgaeScreen.dart';
+import 'package:taskplus/View/Screens/InviteScreen.dart';
+import 'package:taskplus/View/Screens/SignupScreen.dart';
+import 'package:taskplus/View/Screens/workspaceScreen.dart';
+import 'package:taskplus/View/Widgets/Button.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,6 +23,30 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _firebaseMessaging.requestPermission();
+
+    _firebaseMessaging.getToken().then((token) async {
+      print("Device Token: $token");
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('device_token', token!);
+    });
+  }
+
+  @override
+  void dispose() {
+    // Dispose of the text editing controllers
+    emailController.dispose();
+    passwordController.dispose();
+
+    super.dispose();
+  }
+
   bool _obscurePassword = true;
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -19,22 +55,22 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       backgroundColor: AppColor.backgroundColor,
       body: SingleChildScrollView(
-        child: Container(
+        child: SizedBox(
           width: double.infinity,
           child: Padding(
             padding: const EdgeInsets.all(40),
             child: Column(
               children: [
-                Image(
+                const Image(
                   image: AssetImage('assets/images/Logo.png'),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 30,
                 ),
-                Image(
+                const Image(
                   image: AssetImage('assets/images/Get Started.png'),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 20,
                 ),
                 Text(
@@ -42,7 +78,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: Regular15,
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Container(
                   width: MediaQuery.of(context).size.width,
                   color: AppColor.whiteColor,
@@ -53,11 +89,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Column(
                           children: [
                             Text("Login", style: semiBold18),
-                            SizedBox(
+                            const SizedBox(
                               height: 20,
                             ),
                             TextFormField(
-                              key: Key('email_field'),
+                              key: const Key('email_field'),
                               controller: emailController,
                               decoration: InputDecoration(
                                 labelText: 'Email',
@@ -66,40 +102,40 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(5.0),
-                                    borderSide:
-                                        BorderSide(color: AppColor.blackColor)),
+                                    borderSide: const BorderSide(
+                                        color: AppColor.blackColor)),
                                 filled: true,
                                 fillColor: AppColor.secondColor,
                                 labelStyle:
-                                    TextStyle(color: AppColor.iconsColor),
-                                contentPadding: EdgeInsets.symmetric(
+                                    const TextStyle(color: AppColor.iconsColor),
+                                contentPadding: const EdgeInsets.symmetric(
                                     vertical: 10.0, horizontal: 10.0),
-                                prefixIcon: Icon(Icons.email,
+                                prefixIcon: const Icon(Icons.email,
                                     color: AppColor.iconsColor),
                               ),
                             ),
-                            SizedBox(height: 20),
+                            const SizedBox(height: 20),
                             TextFormField(
-                              key: Key('password_field'),
+                              key: const Key('password_field'),
                               controller: passwordController,
                               obscureText: _obscurePassword,
                               decoration: InputDecoration(
                                 labelText: 'Password',
                                 border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(5.0),
-                                    borderSide:
-                                        BorderSide(color: AppColor.blackColor)),
+                                    borderSide: const BorderSide(
+                                        color: AppColor.blackColor)),
                                 focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(5.0),
-                                    borderSide:
-                                        BorderSide(color: AppColor.blackColor)),
+                                    borderSide: const BorderSide(
+                                        color: AppColor.blackColor)),
                                 filled: true,
                                 fillColor: AppColor.secondColor,
                                 labelStyle:
-                                    TextStyle(color: AppColor.iconsColor),
-                                contentPadding: EdgeInsets.symmetric(
+                                    const TextStyle(color: AppColor.iconsColor),
+                                contentPadding: const EdgeInsets.symmetric(
                                     vertical: 10.0, horizontal: 10.0),
-                                prefixIcon: Icon(Icons.lock,
+                                prefixIcon: const Icon(Icons.lock,
                                     color: AppColor.iconsColor),
                                 suffixIcon: GestureDetector(
                                   onTap: () {
@@ -116,40 +152,99 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                               ),
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 20,
                             ),
-                            ElevatedButton(
-                              onPressed: () {},
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColor.greenColor,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                ),
-                                minimumSize: Size(150, 40),
-                              ),
-                              child: Text(
-                                'Login',
-                                style: RegularWhite15,
-                              ),
+                            CustomElevatedButton(
+                              onPressed: () async {
+                                AuthenticationService authService =
+                                    AuthenticationService();
+                                if (!validateEmail(emailController.text)) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Enter a valid email'),
+                                    ),
+                                  );
+                                  return;
+                                }
+
+                                User user = User(
+                                  username: emailController.text,
+                                  password: passwordController.text,
+                                );
+
+                                final response = await authService.login(user);
+
+                                if (response == null ||
+                                    !response.containsKey('token')) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Login failed')),
+                                  );
+                                  return;
+                                }
+
+                                int id = await getMemberIdFromPrefs();
+                                MemberService memberService =
+                                    MemberService(baseUrl: baseurl);
+                                Member member =
+                                    await memberService.getMember(id);
+
+                                Member newmember = Member(
+                                  id: member.id,
+                                  password: member.password,
+                                  username: member.username,
+                                  superuser: member.superuser,
+                                  name: member.name,
+                                  deviceToken: await getDeviceTokenFromPrefs(),
+                                  workspace: member.workspace,
+                                );
+
+                                await memberService.updateMember(newmember);
+
+                                if (member.workspace != null) {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => MyHomePage()),
+                                  );
+                                } else {
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            WorkspaceScreen()),
+                                  );
+                                }
+                              },
+                              text: 'Login',
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 10,
                             ),
-                            Text.rich(
-                              TextSpan(
-                                text: "Don't have an account? ",
-                                style: Regular12,
-                                children: [
-                                  TextSpan(
-                                    text: "Sign up!",
-                                    style: GoogleFonts.inter(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
+                            GestureDetector(
+                              child: Text.rich(
+                                TextSpan(
+                                  text: "Don't have an account? ",
+                                  style: Regular15,
+                                  children: [
+                                    TextSpan(
+                                      text: "Sign up!",
+                                      style: GoogleFonts.inter(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
+                              onTap: () {
+                                Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const SignupScreen(),
+                                    ));
+                              },
                             )
                           ],
                         ),
@@ -164,4 +259,10 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
+}
+
+bool validateEmail(String email) {
+  final RegExp regex =
+      RegExp(r'^[a-zA-Z0-9.a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$');
+  return regex.hasMatch(email);
 }

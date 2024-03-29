@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "615559650193",
-    "project_id": "taskplus-64fb9",
-    "storage_bucket": "taskplus-64fb9.appspot.com"
+    "project_number": "933927494037",
+    "project_id": "taskplus-1ccf9",
+    "storage_bucket": "taskplus-1ccf9.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:615559650193:android:ed71e50a924759bbc41830",
+        "mobilesdk_app_id": "1:933927494037:android:cc05479ab064814cd6969c",
         "android_client_info": {
           "package_name": "com.example.taskplus"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDkFtkd0W5Ufch9ygq-CrAZZVj0HaXV9EE"
+          "current_key": "AIzaSyAsfFcWg71j44wyQCwyrzqmdD7qJjvXp4M"
         }
       ],
       "services": {
