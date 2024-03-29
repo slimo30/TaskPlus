@@ -12,25 +12,26 @@ from rest_framework.response import Response
 from rest_framework import status
 
 
-class MemberSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Member
-        fields = '__all__'
-
 class UserSerializer(ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'password']
+        fields = ['id', 'username', 'password']
 
     def save(self, **kwargs):
         new_user = User.objects.create_user(
             username=self.validated_data['username'],
-            email=self.validated_data['email'],
         )
         new_user.set_password(self.validated_data['password'])
         new_user.save()
         new_token = Token.objects.create(user=new_user)
         return new_user
+        
+class MemberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Member
+        fields = '__all__'
+
+
 
 class WorkspaceSerializer1(serializers.ModelSerializer):
     class Meta:

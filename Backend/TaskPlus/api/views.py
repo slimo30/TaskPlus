@@ -2,13 +2,13 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import action, api_view, permission_classes, authentication_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.authentication import TokenAuthentication
 from rest_framework import generics, viewsets
 from rest_framework.authtoken.models import Token
 
 from django.http import HttpResponse
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
+from rest_framework.authentication import TokenAuthentication, SessionAuthentication
 
 from .models import * 
 from .serializers import *  # 
@@ -24,66 +24,64 @@ from rest_framework.decorators import action
 import requests
 
 
+
+    
+
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def signup(request):
-    member_serializer = MemberSerializer(data=request.data)
-    if member_serializer.is_valid():
-        member = member_serializer.save()
+    user_serializer = UserSerializer(data=request.data)
+    if user_serializer.is_valid():
+        user = user_serializer.save()
 
-        user_data = {
-            'email': request.data.get('email'),
-            'username': request.data.get('username', ''),
+        # Create an associated Member instance
+        member_data = {
+            'user': user.id,
+            'username': user.username,
+            'name': request.data.get('name'),
             'password': request.data.get('password'),
+            'workspace': request.data.get('workspace'),
+            'device_token': request.data.get('device_token'),
+            'superuser': request.data.get('superuser', False)
         }
 
-        user_serializer = UserSerializer(data=user_data)
-        if user_serializer.is_valid():
-            user = user_serializer.save()
-            member.user = user
-            member.save()
-
+        member_serializer = MemberSerializer(data=member_data)
+        if member_serializer.is_valid():
+            member_serializer.save()
             token, _ = Token.objects.get_or_create(user=user)
-            member_data = MemberSerializer(member).data
-            del member_data['password']
-
-            return Response({"member": member_data, "token": token.key}, status=status.HTTP_201_CREATED)
+            user_data = UserSerializer(user).data
+            # Exclude the 'password' field from the response
+            del user_data['password']
+            return Response({"user": user_data, "token": token.key}, status=status.HTTP_201_CREATED)
         else:
-            member.delete()
-            return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            user.delete()
+            return Response(member_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    return Response(member_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return Response(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def login(request):
+   
     data = request.data
-    member = authenticate(username=data['username'], password=data['password'])
+    usernamestring = data['username']
+    user = authenticate(username=data['username'], password=data['password'])
 
-    if member:
-        token, created_token = Token.objects.get_or_create(user=member.user)
-
-        response_data = {
-            'member': MemberSerializer(member).data,
-            'token': token.key,
-        }
-
-        del response_data['member']['password']
-
-        return Response(response_data)
+    if user:
+        token, created_token = Token.objects.get_or_create(user=user)
+        member = Member.objects.filter(username=usernamestring).first()
+        if member:
+            response_data = {
+                'token': token.key,
+                'id': member.id,
+            }
+            return Response(response_data)
+        else:
+            return Response({"detail": "Member not found"}, status=status.HTTP_404_NOT_FOUND)
 
     return Response({"detail": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(["POST"])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
-def logout(request):
-    try:
-        request.auth.delete()
-        return Response({"message": "Logout was successful"}, status=status.HTTP_200_OK)
-    except Exception as e:
-        return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
 
 
 
@@ -210,7 +208,7 @@ class JoinWorkspaceAPIView(APIView):
 
     def send_notification_to_workspace_members(self, workspace, message):
         # Replace this with your Firebase Cloud Messaging (FCM) server key
-        fcm_server_key = 'AAAAV_YaQHU:APA91bF-_5mVo5x-B0Z1yeVRmBAP-32aqmNreGQ7PFv65pdw4piEKyjNgkXyfTGu6fnyXbo4nCDS4r_o60Of9emOdcHJkAtvHb37DydXKYQmN9h8Zm7KUc03jFNIRvIwWD6vm_4yr8PF'
+        fcm_server_key = 'AAAA2XJqoZU:APA91bEN0c0-qzOuaezMX6_hlFPI7j_lGumkHEU8NlQAFF2I9L2m-bhQROssaAktc_2PtOzJ3X0HtFO-DhgS-6OcE17QVJ6ERJ513Dq8yPr2_8E5vf8yKOkFUL5suLn6BLBrWQjfs_x3'
 
         # Get all members in the workspace
         members = Member.objects.filter(workspace=workspace).exclude(device_token__in=['', None])
@@ -269,7 +267,7 @@ def send_notification(device_token, title, body, subtitle=None):
         fcm_url = 'https://fcm.googleapis.com/fcm/send'
         headers = {
             'Content-Type': 'application/json',
-            'Authorization': 'key=AAAAV_YaQHU:APA91bF-_5mVo5x-B0Z1yeVRmBAP-32aqmNreGQ7PFv65pdw4piEKyjNgkXyfTGu6fnyXbo4nCDS4r_o60Of9emOdcHJkAtvHb37DydXKYQmN9h8Zm7KUc03jFNIRvIwWD6vm_4yr8PF',  # Replace with your FCM server key
+            'Authorization': 'key=AAAA2XJqoZU:APA91bEN0c0-qzOuaezMX6_hlFPI7j_lGumkHEU8NlQAFF2I9L2m-bhQROssaAktc_2PtOzJ3X0HtFO-DhgS-6OcE17QVJ6ERJ513Dq8yPr2_8E5vf8yKOkFUL5suLn6BLBrWQjfs_x3',  # Replace with your FCM server key
         }
 
         payload = {

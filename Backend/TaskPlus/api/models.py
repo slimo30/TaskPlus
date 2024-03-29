@@ -13,13 +13,13 @@ class Workspace(models.Model):
 
 
 class Member(models.Model):
-    email = models.EmailField()
+    
     password = models.CharField(max_length=255)
     workspace = models.ForeignKey(Workspace, on_delete=models.SET_NULL, null=True, blank=True, related_name='members')
     device_token = models.CharField(max_length=255, null=True, blank=True)
     username = models.CharField(max_length=255)
     superuser = models.BooleanField(default=  False)
-
+    name = models.CharField(max_length=255, default='Default Name')
     def __str__(self):
         return self.username
 
