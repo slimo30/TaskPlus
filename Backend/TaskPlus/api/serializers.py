@@ -26,10 +26,11 @@ class UserSerializer(ModelSerializer):
         new_token = Token.objects.create(user=new_user)
         return new_user
         
+        
 class MemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = Member
-        fields = '__all__'
+        fields = ['id', 'workspace', 'device_token', 'username', 'superuser', 'name']
 
 
 
@@ -55,6 +56,7 @@ class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
         fields = '__all__'
+        read_only_fields = ('order_position',)
 
 
 class CommentSerializer(serializers.ModelSerializer):

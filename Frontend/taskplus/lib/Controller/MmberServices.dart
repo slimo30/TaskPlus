@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:taskplus/Const/link.dart';
 import 'package:taskplus/Controller/Authentification.dart';
 import 'package:taskplus/Model/Member.dart';
+import 'package:taskplus/utils/link.dart';
 
 class MemberService {
   String baseUrl = baseurl;
@@ -37,9 +37,6 @@ class MemberService {
           await getHeaders(), // Assuming getHeaders() provides necessary headers
     );
 
-    print('Status code: ${response.statusCode}');
-    print('Response body: ${response.body}');
-
     if (response.statusCode == 200) {
       // If the server returns 200 OK, parse the response body
       final data = json.decode(response.body);
@@ -47,7 +44,6 @@ class MemberService {
       Member member = Member.fromJson(data);
       return member;
     } else {
-      // If the server did not return a 200 OK response, throw an exception
       throw Exception('Failed to fetch member');
     }
   }

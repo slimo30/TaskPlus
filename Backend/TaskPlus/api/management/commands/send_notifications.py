@@ -20,7 +20,6 @@ class Command(BaseCommand):
     def check_and_send_notifications(self):
         print("Checking and sending notifications...")
 
-        # Filter tasks that are incomplete and have a non-null device_token
         tasks = Task.objects.filter(state='incomplete', task_owner__device_token__isnull=False)
 
         for task in tasks:

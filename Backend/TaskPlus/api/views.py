@@ -22,6 +22,7 @@ from .models import Task
 from .serializers import TaskSerializer
 from rest_framework.decorators import action
 import requests
+from django.db.models import F  
 
 
 
@@ -140,16 +141,62 @@ class MissionListView(generics.ListCreateAPIView):
     queryset = Mission.objects.all()
     serializer_class = MissionSerializer
 
+class MissionListViewByWorkspace(generics.ListAPIView):
+    serializer_class = MissionSerializer
+
+    def get_queryset(self):
+        workspace_id = self.kwargs['workspace_id']
+        return Mission.objects.filter(workspace_id=workspace_id)
+
 #maybe not needed
 class MissionDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Mission.objects.all()
     serializer_class = MissionSerializer
 
+class WorkspaceMissionListView(generics.ListAPIView):
+    serializer_class = MissionSerializer
+
+    def get_queryset(self):
+        workspace_id = self.kwargs['workspace_id']
+        return Mission.objects.filter(workspace_id=workspace_id)
+        
+class TaskListViewByMission(generics.ListAPIView):
+    serializer_class = TaskSerializer
+
+    def get_queryset(self):
+        mission_id = self.kwargs['mission_id']
+        return Task.objects.filter(mission__id=mission_id).order_by('order_position')
+
+
+class TaskListViewByMember(generics.ListAPIView):
+    serializer_class = TaskSerializer
+
+    def get_queryset(self):
+        member_id = self.kwargs['member_id']
+        return Task.objects.filter(task_owner__id=member_id)
+
+
+class TaskListViewByMemberHistory(generics.ListAPIView):
+    serializer_class = TaskSerializer
+
+    def get_queryset(self):
+        member_id = self.kwargs['member_id']
+        return Task.objects.filter(
+            task_owner__id=member_id,
+            state__in=['missed', 'complete']
+        ).order_by('time_created')
+
 
 class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
-   
+
+    def perform_destroy(self, instance):
+        mission = instance.mission
+        order_position = instance.order_position
+        instance.delete()
+        Task.objects.filter(mission=mission, order_position__gt=order_position).update(order_position=F('order_position') - 1)
+
     @action(detail=True, methods=['get'])
     def download_file(self, request, pk=None):
         task = self.get_object()
@@ -161,9 +208,8 @@ class TaskViewSet(viewsets.ModelViewSet):
                 response['Content-Disposition'] = f'attachment; filename="{Path(file_path).name}"'
                 return response
         else:
-            return Response({'detail': 'File not found'}, status=status.HTTP_404_NOT_FOUND)
-
-
+            return Res
+            
 
 class CommentListCreateView(generics.ListCreateAPIView):
     queryset = Comment.objects.all()
@@ -173,6 +219,13 @@ class CommentRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
+class CommentListViewByWorkspace(generics.ListAPIView):
+    serializer_class = CommentSerializer
+
+    def get_queryset(self):
+        workspace_id = self.kwargs['workspace_id']
+        return Comment.objects.filter(workspace__id=workspace_id).order_by('time_posted')
+
 class CategoryListCreateView(generics.ListCreateAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
@@ -180,7 +233,12 @@ class CategoryListCreateView(generics.ListCreateAPIView):
 class CategoryRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+class CategoryListCreateViewByWorkspace(generics.ListCreateAPIView):
+    serializer_class = CategorySerializer
 
+    def get_queryset(self):
+        workspace_id = self.kwargs['workspace_id']
+        return Category.objects.filter(workspace_id=workspace_id)
 
 class JoinWorkspaceAPIView(APIView):
     def post(self, request, *args, **kwargs):
@@ -205,7 +263,7 @@ class JoinWorkspaceAPIView(APIView):
             return Response({'detail': 'Member not found.'}, status=status.HTTP_404_NOT_FOUND)
         except Workspace.DoesNotExist:
             return Response({'detail': 'Invalid invite code.'}, status=status.HTTP_400_BAD_REQUEST)
-
+   ##############################################################33 #fix this issue
     def send_notification_to_workspace_members(self, workspace, message):
         # Replace this with your Firebase Cloud Messaging (FCM) server key
         fcm_server_key = 'AAAA2XJqoZU:APA91bEN0c0-qzOuaezMX6_hlFPI7j_lGumkHEU8NlQAFF2I9L2m-bhQROssaAktc_2PtOzJ3X0HtFO-DhgS-6OcE17QVJ6ERJ513Dq8yPr2_8E5vf8yKOkFUL5suLn6BLBrWQjfs_x3'
@@ -284,3 +342,46 @@ def send_notification(device_token, title, body, subtitle=None):
         return response.status_code
     except Exception as e:
         print(f"An error occurred during notification sending: {e}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+from .models import Task
+from .serializers import TaskSerializer
+
+class CompleteTaskView(APIView):
+    def post(self, request, task_id):
+        task = get_object_or_404(Task, pk=task_id)
+        
+        if task.mission.ordered:
+            # Retrieve all pending tasks in the mission
+            pending_tasks = Task.objects.filter(
+                mission=task.mission,
+                state='incomplete'
+            ).order_by('order_position')
+            
+            # Check if the task to be completed has the smallest order position
+            if pending_tasks.exists() and pending_tasks.first().order_position != task.order_position:
+                return Response(
+                    {"detail": "You must complete tasks in order. Please complete preceding tasks first."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        task.state = 'complete'
+        task.save()
+        serializer = TaskSerializer(task)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+

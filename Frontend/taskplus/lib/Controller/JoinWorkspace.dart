@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-import 'package:taskplus/Const/link.dart';
 import 'package:taskplus/Controller/Authentification.dart';
+import 'package:taskplus/utils/link.dart';
 
-Future<void> joinWorkspace( String inviteCode) async {
+Future<int> joinWorkspace(String inviteCode) async {
   final url = Uri.parse('$baseurl/join-workspace/');
   final response = await http.post(
     url,
@@ -21,4 +21,6 @@ Future<void> joinWorkspace( String inviteCode) async {
     print('Failed to join workspace');
     print('Response body: ${response.body}');
   }
+
+  return response.statusCode;
 }

@@ -1,6 +1,5 @@
 class Member {
   final int id;
-  final String password;
   final String? deviceToken;
   final String username;
   final bool superuser;
@@ -9,7 +8,6 @@ class Member {
 
   Member({
     required this.id,
-    required this.password,
     this.deviceToken,
     required this.username,
     required this.superuser,
@@ -20,7 +18,6 @@ class Member {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'password': password,
       'device_token': deviceToken,
       'username': username,
       'superuser': superuser,
@@ -32,7 +29,6 @@ class Member {
   static Member fromJson(Map<String, dynamic> data) {
     return Member(
       id: data['id'],
-      password: data['password'],
       deviceToken: data['device_token'],
       username: data['username'],
       superuser: data['superuser'],
