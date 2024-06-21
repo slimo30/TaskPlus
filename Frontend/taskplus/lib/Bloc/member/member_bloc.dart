@@ -10,6 +10,7 @@ class MemberBloc extends Bloc<MemberEvent, MemberState> {
   MemberBloc({required this.memberRepository}) : super(MemberInitial()) {
     on<FetchMembers>(_onFetchMembers);
     on<UpdateMember>(_onUpdateMember);
+    on<FetchMember>(_onFetchMember);
   }
 
   Future<void> _onFetchMembers(
@@ -32,6 +33,17 @@ class MemberBloc extends Bloc<MemberEvent, MemberState> {
       emit(MemberLoaded(members));
     } catch (e) {
       emit(MemberError('Failed to update member'));
+    }
+  }
+
+  Future<void> _onFetchMember(
+      FetchMember event, Emitter<MemberState> emit) async {
+    emit(MemberLoading());
+    try {
+      final member = await memberRepository.getMember(event.memberId);
+      emit(MemberLoadedSingle(member));
+    } catch (e) {
+      emit(MemberError('Failed to fetch member'));
     }
   }
 }

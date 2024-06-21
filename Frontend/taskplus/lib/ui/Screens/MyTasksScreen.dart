@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import 'package:taskplus/Bloc/member/member_bloc.dart';
 import 'package:taskplus/Bloc/member/member_event.dart';
@@ -13,6 +14,7 @@ import 'package:taskplus/Bloc/task/task_bloc.dart';
 import 'package:taskplus/Controller/Authentification.dart';
 import 'package:taskplus/Controller/member_repo.dart';
 import 'package:taskplus/Controller/task_repo.dart';
+import 'package:taskplus/Controller/themeProvider.dart';
 import 'package:taskplus/Model/Member.dart';
 import 'package:taskplus/Model/TaskModel.dart';
 import 'package:taskplus/ui/Screens/MissionDetailsScreen.dart';
@@ -46,7 +48,10 @@ class _MyTasksScreenState extends State<MyTasksScreen> {
   @override
   Widget build(BuildContext context) {
     if (memberId == null) {
-      return Center(child: CircularProgressIndicator());
+      return Center(
+          child: CircularProgressIndicator(
+        color: AppColor.greenColor,
+      ));
     }
 
     return MultiRepositoryProvider(
@@ -107,13 +112,16 @@ class _MyTasksPageState extends State<MyTasksPage> {
 
   @override
   Widget build(BuildContext context) {
+    bool isDarkMode = Provider.of<ThemeProvider>(context).isDarkMode;
+
     return Scaffold(
       appBar: customAppBarwithoutleading(
         "My Tasks",
         AppColor.blackColor,
         context,
       ),
-      backgroundColor: AppColor.backgroundColor,
+      backgroundColor:
+          !isDarkMode ? AppColor.backgroundColor : AppColor.blackColor,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -173,7 +181,9 @@ class _MyTasksPageState extends State<MyTasksPage> {
                               padding: const EdgeInsets.only(bottom: 10),
                               child: Container(
                                 decoration: BoxDecoration(
-                                  color: AppColor.whiteColor,
+                                  color: !isDarkMode
+                                      ? AppColor.whiteColor
+                                      : AppColor.darkModeBackgroundColor,
                                   borderRadius: BorderRadius.circular(5),
                                 ),
                                 child: Padding(
@@ -232,7 +242,9 @@ class _MyTasksPageState extends State<MyTasksPage> {
                                               style: GoogleFonts.inter(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.bold,
-                                                color: Colors.black,
+                                                color: !isDarkMode
+                                                    ? AppColor.blackColor
+                                                    : AppColor.whiteColor,
                                               ),
                                               softWrap: true,
                                             ),
@@ -246,7 +258,9 @@ class _MyTasksPageState extends State<MyTasksPage> {
                                               "${task.description}",
                                               style: GoogleFonts.inter(
                                                 fontSize: 14,
-                                                color: Colors.black,
+                                                color: !isDarkMode
+                                                    ? AppColor.blackColor
+                                                    : AppColor.whiteColor,
                                               ),
                                               softWrap: true,
                                             ),
@@ -259,7 +273,9 @@ class _MyTasksPageState extends State<MyTasksPage> {
                                             "Task owner : ${owner.name}",
                                             style: GoogleFonts.inter(
                                                 fontSize: 14,
-                                                color: Colors.black,
+                                                color: !isDarkMode
+                                                    ? AppColor.blackColor
+                                                    : AppColor.whiteColor,
                                                 fontWeight: FontWeight.bold),
                                           ),
                                         ],
@@ -270,7 +286,9 @@ class _MyTasksPageState extends State<MyTasksPage> {
                                             "Deadline: ${DateFormat('yyyy-MM-dd HH:mm').format(task.deadline)}",
                                             style: GoogleFonts.inter(
                                               fontSize: 14,
-                                              color: Colors.black,
+                                              color: !isDarkMode
+                                                  ? AppColor.blackColor
+                                                  : AppColor.whiteColor,
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
@@ -287,7 +305,9 @@ class _MyTasksPageState extends State<MyTasksPage> {
                                               style: GoogleFonts.inter(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.bold,
-                                                color: Colors.black,
+                                                color: !isDarkMode
+                                                    ? AppColor.blackColor
+                                                    : AppColor.whiteColor,
                                               ),
                                               softWrap: true,
                                             ),
@@ -541,20 +561,34 @@ class _MyTasksPageState extends State<MyTasksPage> {
                                                   builder: (BuildContext
                                                       dialogContext) {
                                                     return AlertDialog(
+                                                      backgroundColor: !isDarkMode
+                                                          ? AppColor
+                                                              .backgroundColor
+                                                          : AppColor.blackColor,
                                                       title: Text(
                                                         "Incomplete Tasks",
-                                                        style: TextStyle(
+                                                        style:
+                                                            GoogleFonts.inter(
                                                           fontSize: 18,
                                                           fontWeight:
                                                               FontWeight.bold,
-                                                          color: Colors.black,
+                                                          color: isDarkMode
+                                                              ? AppColor
+                                                                  .backgroundColor
+                                                              : AppColor
+                                                                  .blackColor,
                                                         ),
                                                       ),
                                                       content: Text(
                                                         "You must complete tasks in order. Please complete preceding tasks first.",
-                                                        style: TextStyle(
+                                                        style:
+                                                            GoogleFonts.inter(
                                                           fontSize: 16,
-                                                          color: Colors.black,
+                                                          color: isDarkMode
+                                                              ? AppColor
+                                                                  .backgroundColor
+                                                              : AppColor
+                                                                  .blackColor,
                                                         ),
                                                       ),
                                                       actions: <Widget>[
@@ -562,10 +596,9 @@ class _MyTasksPageState extends State<MyTasksPage> {
                                                           child: Text(
                                                             "OK",
                                                             style: TextStyle(
-                                                              fontSize: 16,
-                                                              color:
-                                                                  Colors.blue,
-                                                            ),
+                                                                fontSize: 16,
+                                                                color: AppColor
+                                                                    .greenColor),
                                                           ),
                                                           onPressed: () {
                                                             Navigator.of(
@@ -580,8 +613,6 @@ class _MyTasksPageState extends State<MyTasksPage> {
                                                             BorderRadius
                                                                 .circular(10),
                                                       ),
-                                                      backgroundColor:
-                                                          Colors.white,
                                                       elevation: 10,
                                                     );
                                                   },
@@ -608,13 +639,16 @@ class _MyTasksPageState extends State<MyTasksPage> {
                                                             task.timeCreated),
                                                     style: GoogleFonts.inter(
                                                       fontSize: 14,
-                                                      color:
-                                                          AppColor.blackColor,
+                                                      color: !isDarkMode
+                                                          ? AppColor.blackColor
+                                                          : AppColor.whiteColor,
                                                     )),
                                                 SizedBox(width: 8),
                                                 Icon(
                                                   Icons.date_range_outlined,
-                                                  color: AppColor.blackColor,
+                                                  color: !isDarkMode
+                                                      ? AppColor.blackColor
+                                                      : AppColor.whiteColor,
                                                   size: 20,
                                                 ),
                                               ],
@@ -673,6 +707,8 @@ class _MyTasksPageState extends State<MyTasksPage> {
   }
 
   Widget _buildFilterDropdown() {
+    bool isDarkMode = Provider.of<ThemeProvider>(context).isDarkMode;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -681,7 +717,7 @@ class _MyTasksPageState extends State<MyTasksPage> {
           style: GoogleFonts.inter(
             fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: Colors.black,
+            color: !isDarkMode ? AppColor.blackColor : AppColor.whiteColor,
           ),
         ),
         SizedBox(width: 10),
@@ -690,7 +726,7 @@ class _MyTasksPageState extends State<MyTasksPage> {
           icon: Icon(
             Icons.arrow_drop_down,
             size: 30,
-            color: AppColor.blackColor,
+            color: !isDarkMode ? AppColor.blackColor : AppColor.whiteColor,
           ),
           iconSize: 24,
           elevation: 16,
@@ -708,7 +744,8 @@ class _MyTasksPageState extends State<MyTasksPage> {
                 value[0].toUpperCase() + value.substring(1),
                 style: GoogleFonts.inter(
                     fontSize: 16,
-                    color: Colors.black,
+                    color:
+                        !isDarkMode ? AppColor.blackColor : AppColor.whiteColor,
                     fontWeight: FontWeight.bold),
               ),
             );

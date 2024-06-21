@@ -4,7 +4,6 @@ class Comment {
   final DateTime timePosted;
   final int employee;
   final int task;
-  final int workspace;
 
   Comment({
     required this.id,
@@ -12,7 +11,6 @@ class Comment {
     required this.timePosted,
     required this.employee,
     required this.task,
-    required this.workspace,
   });
 
   factory Comment.fromJson(Map<String, dynamic> json) {
@@ -22,7 +20,16 @@ class Comment {
       timePosted: DateTime.parse(json['time_posted']),
       employee: json['employee'],
       task: json['task'],
-      workspace: json['workspace'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'text': text,
+      'time_posted': timePosted.toIso8601String(),
+      'employee': employee,
+      'task': task,
+    };
   }
 }

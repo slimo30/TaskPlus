@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mailer/smtp_server/gmail.dart';
+import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:taskplus/Controller/themeProvider.dart';
 
 import 'package:taskplus/ui/Widgets/Appbar.dart';
 import 'package:taskplus/ui/Widgets/Button.dart';
@@ -57,10 +59,13 @@ class _InviteScreenState extends State<InviteScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool isDarkMode = Provider.of<ThemeProvider>(context).isDarkMode;
+
     return Scaffold(
       appBar:
           customAppBarwithoutleading("Invite", AppColor.blackColor, context),
-      backgroundColor: AppColor.backgroundColor,
+      backgroundColor:
+          isDarkMode ? AppColor.blackColor : AppColor.backgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Container(
@@ -74,7 +79,9 @@ class _InviteScreenState extends State<InviteScreen> {
                   children: [
                     Container(
                       width: MediaQuery.of(context).size.width * 0.8,
-                      color: AppColor.whiteColor,
+                      color: !isDarkMode
+                          ? AppColor.whiteColor
+                          : AppColor.darkModeBackgroundColor,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
@@ -82,7 +89,15 @@ class _InviteScreenState extends State<InviteScreen> {
                             padding: const EdgeInsets.all(20.0),
                             child: Column(
                               children: [
-                                Text("Invite Member", style: semiBold18),
+                                Text("Invite Member",
+                                    style: GoogleFonts.inter(
+                                      color: !isDarkMode
+                                          ? AppColor.blackColor
+                                          : AppColor.whiteColor,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                      // Semi-bold (w600)
+                                    )),
                                 const SizedBox(height: 20),
                                 TextFormField(
                                   key: const Key('email_field'),
@@ -119,8 +134,15 @@ class _InviteScreenState extends State<InviteScreen> {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
                                         SnackBar(
-                                          content:
-                                              Text('Please enter an email'),
+                                          content: Text(
+                                            'Please enter an email',
+                                            style: GoogleFonts.inter(
+                                              color: !isDarkMode
+                                                  ? AppColor.blackColor
+                                                  : AppColor.whiteColor,
+                                              fontSize: 18,
+                                            ),
+                                          ),
                                         ),
                                       );
                                     }
@@ -138,11 +160,13 @@ class _InviteScreenState extends State<InviteScreen> {
                 SizedBox(
                   height: 30,
                 ),
-                const Text(
+                Text(
                   "Scan Qr code",
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     fontSize: 30,
                     fontWeight: FontWeight.w900,
+                    color:
+                        !isDarkMode ? AppColor.blackColor : AppColor.whiteColor,
                   ),
                 ),
                 SizedBox(

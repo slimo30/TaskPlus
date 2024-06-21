@@ -9,6 +9,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:taskplus/Bloc/member/member_bloc.dart';
 import 'package:taskplus/Bloc/member/member_event.dart';
 import 'package:taskplus/Bloc/member/member_state.dart';
@@ -16,10 +17,12 @@ import 'package:taskplus/Bloc/task/task_bloc.dart';
 import 'package:taskplus/Controller/Authentification.dart';
 import 'package:taskplus/Controller/member_repo.dart';
 import 'package:taskplus/Controller/task_repo.dart';
+import 'package:taskplus/Controller/themeProvider.dart';
 import 'package:taskplus/Model/Category.dart';
 import 'package:taskplus/Model/Member.dart';
 import 'package:taskplus/Model/Messions.dart';
 import 'package:taskplus/Model/TaskModel.dart';
+import 'package:taskplus/ui/Screens/CommentScreen.dart';
 import 'package:taskplus/ui/Screens/MissionsScreen.dart';
 import 'package:taskplus/ui/Widgets/Appbar.dart';
 import 'package:taskplus/ui/Widgets/Button.dart';
@@ -88,13 +91,16 @@ class MissionDetailsPage extends StatefulWidget {
 class _MissionDetailsPageState extends State<MissionDetailsPage> {
   @override
   Widget build(BuildContext context) {
+    bool isDarkMode = Provider.of<ThemeProvider>(context).isDarkMode;
+
     return Scaffold(
       appBar: customAppBar(
         "Mission",
         AppColor.blackColor,
         context,
       ),
-      backgroundColor: AppColor.backgroundColor,
+      backgroundColor:
+          !isDarkMode ? AppColor.backgroundColor : AppColor.blackColor,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -102,7 +108,9 @@ class _MissionDetailsPageState extends State<MissionDetailsPage> {
             children: [
               Container(
                 decoration: BoxDecoration(
-                  color: AppColor.whiteColor,
+                  color: !isDarkMode
+                      ? AppColor.whiteColor
+                      : AppColor.darkModeBackgroundColor,
                   borderRadius: BorderRadius.circular(5),
                 ),
                 child: Padding(
@@ -118,9 +126,11 @@ class _MissionDetailsPageState extends State<MissionDetailsPage> {
                               Text(
                                 widget.mission.title,
                                 style: GoogleFonts.inter(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: isDarkMode
+                                        ? AppColor.whiteColor
+                                        : AppColor.blackColor),
                                 overflow: TextOverflow.visible,
                               ),
                             ],
@@ -134,14 +144,17 @@ class _MissionDetailsPageState extends State<MissionDetailsPage> {
                                   DateFormat('yyyy-MM-dd HH:mm')
                                       .format(widget.mission.timeCreated),
                                   style: GoogleFonts.inter(
-                                    fontSize: 14,
-                                    color: AppColor.blackColor,
-                                  ),
+                                      fontSize: 14,
+                                      color: isDarkMode
+                                          ? AppColor.whiteColor
+                                          : AppColor.blackColor),
                                 ),
-                                SizedBox(width: 8),
+                                SizedBox(width: 10),
                                 Icon(
                                   Icons.date_range_outlined,
-                                  color: AppColor.blackColor,
+                                  color: isDarkMode
+                                      ? AppColor.whiteColor
+                                      : AppColor.blackColor,
                                   size: 20,
                                 ),
                               ],
@@ -240,10 +253,11 @@ class _MissionDetailsPageState extends State<MissionDetailsPage> {
                                     text:
                                         "Tasks in this mission must be added and completed sequentially, with each task being completed before moving on to the next.",
                                     style: GoogleFonts.inter(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
-                                    ),
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        color: isDarkMode
+                                            ? AppColor.whiteColor
+                                            : AppColor.blackColor),
                                   ),
                                 ],
                               ),
@@ -369,529 +383,7 @@ class _MissionDetailsPageState extends State<MissionDetailsPage> {
                                       username: "Unknown",
                                       superuser: false,
                                       name: "Unknown"));
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 10),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: AppColor.whiteColor,
-                                    borderRadius: BorderRadius.circular(5),
-                                  ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Column(
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Container(
-                                              padding: EdgeInsets.symmetric(
-                                                  horizontal: 8, vertical: 4),
-                                              decoration: BoxDecoration(
-                                                color:
-                                                    getStateColor(task.state),
-                                                borderRadius:
-                                                    BorderRadius.circular(5),
-                                              ),
-                                              child: Text(
-                                                task.state,
-                                                style: GoogleFonts.inter(
-                                                  color: AppColor.whiteColor,
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                            Container(
-                                              padding: EdgeInsets.symmetric(
-                                                  horizontal: 8, vertical: 4),
-                                              decoration: BoxDecoration(
-                                                color: getPriorityColor(
-                                                    task.priority),
-                                                borderRadius:
-                                                    BorderRadius.circular(5),
-                                              ),
-                                              child: Text(
-                                                task.priority,
-                                                style: GoogleFonts.inter(
-                                                  color: AppColor.whiteColor,
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                            ),
-                                            if (widget.mission.ordered)
-                                              Container(
-                                                width:
-                                                    30, // Adjust the width and height as needed
-                                                height: 30,
-                                                decoration: BoxDecoration(
-                                                  color: Colors
-                                                      .black, // Black circle
-                                                  shape: BoxShape.circle,
-                                                ),
-                                                child: Center(
-                                                  child: Text(
-                                                    task.orderPosition
-                                                        .toString(),
-                                                    style: GoogleFonts.inter(
-                                                      color: Colors
-                                                          .white, // White number
-                                                      fontSize:
-                                                          16, // Adjust font size as needed
-                                                      fontWeight: FontWeight
-                                                          .bold, // Optionally, adjust font weight
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                          ],
-                                        ),
-                                        SizedBox(
-                                          height: 10,
-                                        ),
-                                        Row(
-                                          children: [
-                                            Flexible(
-                                              child: Text(
-                                                "${task.title}",
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.black,
-                                                ),
-                                                softWrap: true,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        Row(
-                                          children: [
-                                            Flexible(
-                                              child: Text(
-                                                "${task.description}",
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 14,
-                                                  color: Colors.black,
-                                                ),
-                                                softWrap: true,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        Row(
-                                          children: [
-                                            Text(
-                                              "Task owner : ${owner.name}",
-                                              style: GoogleFonts.inter(
-                                                  fontSize: 14,
-                                                  color: Colors.black,
-                                                  fontWeight: FontWeight.bold),
-                                            ),
-                                          ],
-                                        ),
-                                        Row(
-                                          children: [
-                                            Text(
-                                              "Deadline: ${DateFormat('yyyy-MM-dd HH:mm').format(task.deadline)}",
-                                              style: GoogleFonts.inter(
-                                                fontSize: 14,
-                                                color: Colors.black,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        Divider(
-                                          color: AppColor.iconsColor,
-                                        ),
-                                        Row(
-                                          children: [
-                                            Flexible(
-                                              child: Text(
-                                                "Actions",
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.black,
-                                                ),
-                                                softWrap: true,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(
-                                          height: 10,
-                                        ),
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            (task.fileAttachment == null)
-                                                ? GestureDetector(
-                                                    onTap: () async {
-                                                      try {
-                                                        File? file =
-                                                            await pickFile();
-                                                        if (file != null) {
-                                                          await createTaskWithAttachment(
-                                                              task: task,
-                                                              file: file);
-                                                          final taskBloc =
-                                                              BlocProvider.of<
-                                                                      TaskBloc>(
-                                                                  context);
-
-                                                          taskBloc.add(
-                                                              LoadTasksByMission(
-                                                                  widget.mission
-                                                                      .id));
-                                                        } else {
-                                                          print(
-                                                              'No file picked');
-                                                        }
-                                                      } catch (e) {
-                                                        print(
-                                                            'Error creating task with attachment: $e');
-                                                      }
-                                                    },
-                                                    child: Container(
-                                                      padding:
-                                                          EdgeInsets.symmetric(
-                                                              horizontal: 8,
-                                                              vertical: 4),
-                                                      decoration: BoxDecoration(
-                                                        color:
-                                                            AppColor.blueColor,
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(5),
-                                                      ),
-                                                      child: Row(
-                                                        children: [
-                                                          Text(
-                                                            "Attach file",
-                                                            style: GoogleFonts
-                                                                .inter(
-                                                              color: AppColor
-                                                                  .whiteColor,
-                                                              fontSize: 12,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                            ),
-                                                          ),
-                                                          SizedBox(
-                                                              width:
-                                                                  8), // Added a SizedBox for spacing
-                                                          SizedBox(
-                                                            width:
-                                                                12, // Adjust the width based on your text font size
-                                                            height:
-                                                                12, // Adjust the height to match the icon size
-                                                            child: Icon(
-                                                              Icons.attach_file,
-                                                              color: AppColor
-                                                                  .whiteColor,
-                                                              size:
-                                                                  12, // Set the icon size to match the text font size
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  )
-                                                : GestureDetector(
-                                                    onTap: () async {
-                                                      try {
-                                                        String filePath =
-                                                            await downloadFile(
-                                                                task.taskId);
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                          SnackBar(
-                                                            content: Text(
-                                                                'Download completed. File saved to: $filePath'),
-                                                          ),
-                                                        );
-                                                        print(
-                                                            'Download completed. File saved to: $filePath');
-                                                      } catch (e) {
-                                                        ScaffoldMessenger.of(
-                                                                context)
-                                                            .showSnackBar(
-                                                          SnackBar(
-                                                            content: Text(
-                                                                'Error downloading file: $e'),
-                                                          ),
-                                                        );
-                                                        print(
-                                                            'Error downloading file: $e');
-                                                      }
-                                                    },
-                                                    child: Container(
-                                                      padding:
-                                                          EdgeInsets.symmetric(
-                                                              horizontal: 8,
-                                                              vertical: 4),
-                                                      decoration: BoxDecoration(
-                                                        color:
-                                                            AppColor.redColor,
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(5),
-                                                      ),
-                                                      child: Row(
-                                                        children: [
-                                                          Text(
-                                                            "Download file",
-                                                            style: GoogleFonts
-                                                                .inter(
-                                                              color: AppColor
-                                                                  .whiteColor,
-                                                              fontSize: 12,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                            ),
-                                                          ),
-                                                          SizedBox(width: 8),
-                                                          SizedBox(
-                                                            width: 12,
-                                                            height: 12,
-                                                            child: Icon(
-                                                              Icons
-                                                                  .download_rounded,
-                                                              color: AppColor
-                                                                  .whiteColor,
-                                                              size:
-                                                                  12, // Set the icon size to match the text font size
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ),
-                                            GestureDetector(
-                                              child: Container(
-                                                padding: EdgeInsets.symmetric(
-                                                    horizontal: 8, vertical: 4),
-                                                decoration: BoxDecoration(
-                                                  color:
-                                                      AppColor.darkGreenColor,
-                                                  borderRadius:
-                                                      BorderRadius.circular(5),
-                                                ),
-                                                child: Row(
-                                                  children: [
-                                                    Text(
-                                                      "Assign",
-                                                      style: GoogleFonts.inter(
-                                                        color:
-                                                            AppColor.whiteColor,
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                    SizedBox(
-                                                        width:
-                                                            8), // Added a SizedBox for spacing
-                                                    SizedBox(
-                                                      width:
-                                                          12, // Adjust the width based on your text font size
-                                                      height:
-                                                          12, // Adjust the height to match the icon size
-                                                      child: Icon(
-                                                        Icons
-                                                            .assignment_turned_in,
-                                                        color:
-                                                            AppColor.whiteColor,
-                                                        size:
-                                                            12, // Set the icon size to match the text font size
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                              onTap: () {
-                                                final taskBloc =
-                                                    BlocProvider.of<TaskBloc>(
-                                                        context);
-                                                final memberBloc =
-                                                    BlocProvider.of<MemberBloc>(
-                                                        context);
-                                                _showMemberSelectionBottomSheet(
-                                                    context,
-                                                    memberBloc,
-                                                    taskBloc,
-                                                    task);
-                                              },
-                                            ),
-                                            Container(
-                                              padding: EdgeInsets.symmetric(
-                                                  horizontal: 8, vertical: 4),
-                                              decoration: BoxDecoration(
-                                                color: AppColor.iconsColor,
-                                                borderRadius:
-                                                    BorderRadius.circular(5),
-                                              ),
-                                              child: Row(
-                                                children: [
-                                                  Text(
-                                                    "Comments",
-                                                    style: GoogleFonts.inter(
-                                                      color:
-                                                          AppColor.whiteColor,
-                                                      fontSize: 12,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                  SizedBox(
-                                                      width:
-                                                          8), // Added a SizedBox for spacing
-                                                  SizedBox(
-                                                    width:
-                                                        12, // Adjust the width based on your text font size
-                                                    height:
-                                                        12, // Adjust the height to match the icon size
-                                                    child: Icon(
-                                                      Icons.comment,
-                                                      color:
-                                                          AppColor.whiteColor,
-                                                      size:
-                                                          12, // Set the icon size to match the text font size
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        Divider(
-                                          color: AppColor.iconsColor,
-                                        ),
-                                        Row(
-                                          children: [
-                                            GestureDetector(
-                                              onTap: () {
-                                                final taskBloc =
-                                                    BlocProvider.of<TaskBloc>(
-                                                        context);
-                                                _showDeleteConfirmationDialog(
-                                                    context,
-                                                    task.taskId,
-                                                    widget.mission.id,
-                                                    taskBloc);
-                                              },
-                                              child: Icon(
-                                                Icons.delete,
-                                                color: AppColor.redColor,
-                                              ),
-                                            ),
-                                            SizedBox(width: 16),
-                                            GestureDetector(
-                                              onTap: () async {
-                                                int owner =
-                                                    await getMemberIdFromPrefs();
-                                                final taskBloc =
-                                                    BlocProvider.of<TaskBloc>(
-                                                        context);
-                                                bool deadline_changed = false;
-                                                bool duration_changed = false;
-                                                showTaskUpdateFormBottomSheet(
-                                                  context: context,
-                                                  onSave: (title,
-                                                      description,
-                                                      priority,
-                                                      deadline,
-                                                      timeToAlert,
-                                                      deadline_changed,
-                                                      duration_changed) {
-                                                    print(
-                                                        "$deadline_changed $duration_changed");
-                                                    taskBloc.add(
-                                                      UpdateTask(
-                                                        Task(
-                                                          taskId: task
-                                                              .taskId, // Assuming taskId is required for update
-                                                          title: title,
-                                                          description:
-                                                              description,
-                                                          priority: priority,
-                                                          state: task
-                                                              .state, // Adjust state as needed
-                                                          deadline: deadline,
-                                                          timeCreated: task
-                                                              .timeCreated, // Keep the original timeCreated
-                                                          orderPosition: task
-                                                              .orderPosition, // Keep the original orderPosition
-                                                          timeToAlert:
-                                                              timeToAlert,
-                                                          notificationSent:
-                                                              deadline_changed
-                                                                  ? false
-                                                                  : task
-                                                                      .notificationSent, // Keep the original notificationSent
-                                                          notificationSentAlert:
-                                                              deadline_changed
-                                                                  ? false
-                                                                  : duration_changed
-                                                                      ? false
-                                                                      : task
-                                                                          .notificationSentAlert, // Keep the original notificationSentAlert
-                                                          taskOwner: owner,
-                                                          mission: widget
-                                                              .mission
-                                                              .id, // Assuming you have access to widget.mission.id
-                                                        ),
-                                                        missionId:
-                                                            widget.mission.id,
-                                                      ),
-                                                    );
-                                                  },
-                                                  taskBloc: taskBloc,
-                                                  task: task,
-                                                );
-                                              },
-                                              child: Icon(
-                                                Icons.edit,
-                                                color: AppColor.orangeColor,
-                                              ),
-                                            ),
-                                            Expanded(
-                                              child: Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.end,
-                                                children: [
-                                                  Text(
-                                                      DateFormat(
-                                                              'yyyy-MM-dd HH:mm')
-                                                          .format(
-                                                              task.timeCreated),
-                                                      style: GoogleFonts.inter(
-                                                        fontSize: 14,
-                                                        color:
-                                                            AppColor.blackColor,
-                                                      )),
-                                                  SizedBox(width: 8),
-                                                  Icon(
-                                                    Icons.date_range_outlined,
-                                                    color: AppColor.blackColor,
-                                                    size: 20,
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              );
+                              return TaskBody(task, owner, context);
                             },
                           );
                         } else {
@@ -901,6 +393,460 @@ class _MissionDetailsPageState extends State<MissionDetailsPage> {
                     },
                   ),
                 ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Padding TaskBody(Task task, Member owner, BuildContext context) {
+    bool isDarkMode = Provider.of<ThemeProvider>(context).isDarkMode;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDarkMode
+              ? AppColor.darkModeBackgroundColor
+              : AppColor.whiteColor,
+          borderRadius: BorderRadius.circular(5),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: getStateColor(task.state),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: Text(
+                      task.state,
+                      style: GoogleFonts.inter(
+                        color: AppColor.whiteColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: getPriorityColor(task.priority),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: Text(
+                      task.priority,
+                      style: GoogleFonts.inter(
+                        color: AppColor.whiteColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  if (widget.mission.ordered)
+                    Container(
+                      width: 30, // Adjust the width and height as needed
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: isDarkMode
+                            ? Colors.white
+                            : Colors.black, // Black circle
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          task.orderPosition.toString(),
+                          style: GoogleFonts.inter(
+                            color: !isDarkMode
+                                ? Colors.white
+                                : Colors.black, // White number
+                            fontSize: 16, // Adjust font size as needed
+                            fontWeight: FontWeight
+                                .bold, // Optionally, adjust font weight
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      "${task.title}",
+                      style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: isDarkMode
+                              ? AppColor.whiteColor
+                              : AppColor.blackColor),
+                      softWrap: true,
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      "${task.description}",
+                      style: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: isDarkMode
+                              ? AppColor.whiteColor
+                              : AppColor.blackColor),
+                      softWrap: true,
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Text(
+                    "Task owner : ${owner.name}",
+                    style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: isDarkMode
+                            ? AppColor.whiteColor
+                            : AppColor.blackColor,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Text(
+                    "Deadline: ${DateFormat('yyyy-MM-dd HH:mm').format(task.deadline)}",
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: isDarkMode
+                          ? AppColor.whiteColor
+                          : AppColor.blackColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              Divider(
+                color: AppColor.iconsColor,
+              ),
+              Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      "Actions",
+                      style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: isDarkMode
+                              ? AppColor.whiteColor
+                              : AppColor.blackColor),
+                      softWrap: true,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  (task.fileAttachment == null)
+                      ? GestureDetector(
+                          onTap: () async {
+                            try {
+                              File? file = await pickFile();
+                              if (file != null) {
+                                await createTaskWithAttachment(
+                                    task: task, file: file);
+                                final taskBloc =
+                                    BlocProvider.of<TaskBloc>(context);
+
+                                taskBloc
+                                    .add(LoadTasksByMission(widget.mission.id));
+                              } else {
+                                print('No file picked');
+                              }
+                            } catch (e) {
+                              print('Error creating task with attachment: $e');
+                            }
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColor.blueColor,
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: Row(
+                              children: [
+                                Text(
+                                  "Attach file",
+                                  style: GoogleFonts.inter(
+                                    color: AppColor.whiteColor,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(
+                                    width: 8), // Added a SizedBox for spacing
+                                SizedBox(
+                                  width:
+                                      12, // Adjust the width based on your text font size
+                                  height:
+                                      12, // Adjust the height to match the icon size
+                                  child: Icon(
+                                    Icons.attach_file,
+                                    color: AppColor.whiteColor,
+                                    size:
+                                        12, // Set the icon size to match the text font size
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      : GestureDetector(
+                          onTap: () async {
+                            try {
+                              String filePath = await downloadFile(task.taskId);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                      'Download completed. File saved to: $filePath'),
+                                ),
+                              );
+                              print(
+                                  'Download completed. File saved to: $filePath');
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Error downloading file: $e'),
+                                ),
+                              );
+                              print('Error downloading file: $e');
+                            }
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColor.redColor,
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: Row(
+                              children: [
+                                Text(
+                                  "Download file",
+                                  style: GoogleFonts.inter(
+                                    color: AppColor.whiteColor,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(width: 8),
+                                SizedBox(
+                                  width: 12,
+                                  height: 12,
+                                  child: Icon(
+                                    Icons.download_rounded,
+                                    color: AppColor.whiteColor,
+                                    size:
+                                        12, // Set the icon size to match the text font size
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                  GestureDetector(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColor.darkGreenColor,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Row(
+                        children: [
+                          Text(
+                            "Assign",
+                            style: GoogleFonts.inter(
+                              color: AppColor.whiteColor,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(width: 8), // Added a SizedBox for spacing
+                          SizedBox(
+                            width:
+                                12, // Adjust the width based on your text font size
+                            height:
+                                12, // Adjust the height to match the icon size
+                            child: Icon(
+                              Icons.assignment_turned_in,
+                              color: AppColor.whiteColor,
+                              size:
+                                  12, // Set the icon size to match the text font size
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    onTap: () {
+                      final taskBloc = BlocProvider.of<TaskBloc>(context);
+                      final memberBloc = BlocProvider.of<MemberBloc>(context);
+                      _showMemberSelectionBottomSheet(
+                          context, memberBloc, taskBloc, task);
+                    },
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CommentScreen(task: task),
+                          ));
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppColor.iconsColor,
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Row(
+                        children: [
+                          Text(
+                            "Comments",
+                            style: GoogleFonts.inter(
+                              color: AppColor.whiteColor,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(width: 8), // Added a SizedBox for spacing
+                          SizedBox(
+                            width:
+                                12, // Adjust the width based on your text font size
+                            height:
+                                12, // Adjust the height to match the icon size
+                            child: Icon(
+                              Icons.comment,
+                              color: AppColor.whiteColor,
+                              size:
+                                  12, // Set the icon size to match the text font size
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              Divider(
+                color: AppColor.iconsColor,
+              ),
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      final taskBloc = BlocProvider.of<TaskBloc>(context);
+                      _showDeleteConfirmationDialog(
+                          context, task.taskId, widget.mission.id, taskBloc);
+                    },
+                    child: Icon(
+                      Icons.delete,
+                      color: AppColor.redColor,
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  GestureDetector(
+                    onTap: () async {
+                      int owner = await getMemberIdFromPrefs();
+                      final taskBloc = BlocProvider.of<TaskBloc>(context);
+                      bool deadline_changed = false;
+                      bool duration_changed = false;
+                      showTaskUpdateFormBottomSheet(
+                        context: context,
+                        onSave: (title, description, priority, deadline,
+                            timeToAlert, deadline_changed, duration_changed) {
+                          print("$deadline_changed $duration_changed");
+                          taskBloc.add(
+                            UpdateTask(
+                              Task(
+                                taskId: task
+                                    .taskId, // Assuming taskId is required for update
+                                title: title,
+                                description: description,
+                                priority: priority,
+                                state: task.state, // Adjust state as needed
+                                deadline: deadline,
+                                timeCreated: task
+                                    .timeCreated, // Keep the original timeCreated
+                                orderPosition: task
+                                    .orderPosition, // Keep the original orderPosition
+                                timeToAlert: timeToAlert,
+                                notificationSent: deadline_changed
+                                    ? false
+                                    : task
+                                        .notificationSent, // Keep the original notificationSent
+                                notificationSentAlert: deadline_changed
+                                    ? false
+                                    : duration_changed
+                                        ? false
+                                        : task
+                                            .notificationSentAlert, // Keep the original notificationSentAlert
+                                taskOwner: owner,
+                                mission: widget.mission
+                                    .id, // Assuming you have access to widget.mission.id
+                              ),
+                              missionId: widget.mission.id,
+                            ),
+                          );
+                        },
+                        taskBloc: taskBloc,
+                        task: task,
+                      );
+                    },
+                    child: Icon(
+                      Icons.edit,
+                      color: AppColor.orangeColor,
+                    ),
+                  ),
+                  Expanded(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text(
+                            DateFormat('yyyy-MM-dd HH:mm')
+                                .format(task.timeCreated),
+                            style: GoogleFonts.inter(
+                                fontSize: 14,
+                                color: isDarkMode
+                                    ? AppColor.whiteColor
+                                    : AppColor.blackColor)),
+                        SizedBox(width: 8),
+                        Icon(
+                          Icons.date_range_outlined,
+                          color: isDarkMode
+                              ? AppColor.whiteColor
+                              : AppColor.blackColor,
+                          size: 20,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -948,20 +894,24 @@ class _MissionDetailsPageState extends State<MissionDetailsPage> {
     showDialog(
         context: context,
         builder: (BuildContext dialogContext) {
+          bool isDarkMode = Provider.of<ThemeProvider>(context).isDarkMode;
+
           return AlertDialog(
+            backgroundColor:
+                isDarkMode ? AppColor.blackColor : AppColor.whiteColor,
             title: Text(
               "Delete Task",
               style: GoogleFonts.inter(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: AppColor.blackColor,
+                color: !isDarkMode ? AppColor.blackColor : AppColor.whiteColor,
               ),
             ),
             content: Text(
               "Are you sure you want to delete this task?",
               style: GoogleFonts.inter(
                 fontSize: 16,
-                color: AppColor.blackColor,
+                color: !isDarkMode ? AppColor.blackColor : AppColor.whiteColor,
               ),
             ),
             actions: <Widget>[
@@ -1022,303 +972,322 @@ void showTaskFormBottomSheet({
     context: context,
     isScrollControlled: true,
     builder: (context) {
-      return Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-          top: 20,
-          left: 20,
-          right: 20,
-        ),
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text('Title',
+      bool isDarkMode = Provider.of<ThemeProvider>(context).isDarkMode;
+
+      return Container(
+        color: !isDarkMode
+            ? AppColor.whiteColor
+            : AppColor.darkModeBackgroundColor,
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            top: 20,
+            left: 20,
+            right: 20,
+          ),
+          child: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Title',
                         style: GoogleFonts.inter(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
+                          color: !isDarkMode
+                              ? AppColor.blackColor
+                              : AppColor.whiteColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  TextFormField(
+                    key: const Key('title_field'),
+                    controller: _titleController,
+                    decoration: InputDecoration(
+                      labelText: 'Title',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5.0),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5.0),
+                        borderSide: const BorderSide(
                           color: Colors.black,
-                        )),
-                  ],
-                ),
-                SizedBox(height: 10),
-                TextFormField(
-                  key: const Key('title_field'),
-                  controller: _titleController,
-                  decoration: InputDecoration(
-                    labelText: 'Title',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                      borderSide: const BorderSide(
-                        color: Colors.black,
+                        ),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey.shade200,
+                      labelStyle: GoogleFonts.inter(
+                        color: Colors.grey.shade600,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 10.0,
+                        horizontal: 10.0,
                       ),
                     ),
-                    filled: true,
-                    fillColor: Colors.grey.shade200,
-                    labelStyle: GoogleFonts.inter(
-                      color: Colors.grey.shade600,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      vertical: 10.0,
-                      horizontal: 10.0,
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a title';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text('Description',
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        )),
-                  ],
-                ),
-                SizedBox(height: 10),
-                TextFormField(
-                  key: const Key('description_field'),
-                  minLines: 3, // Minimum lines to show
-                  maxLines: 3, // Maximum lines to allow
-                  controller: _descriptionController,
-                  decoration: InputDecoration(
-                    labelText: 'Description',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                      borderSide: const BorderSide(
-                        color: Colors.black,
-                      ),
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey.shade200,
-                    labelStyle: GoogleFonts.inter(
-                      color: Colors.grey.shade600,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      vertical: 10.0,
-                      horizontal: 10.0,
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a description';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text('Priority',
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        )),
-                  ],
-                ),
-                SizedBox(height: 10),
-                DropdownButtonFormField<String>(
-                  value: _selectedPriority,
-                  items: _priorities.map((String priority) {
-                    return DropdownMenuItem<String>(
-                      value: priority,
-                      child: Text(priority.capitalize()),
-                    );
-                  }).toList(),
-                  onChanged: (String? value) {
-                    _selectedPriority = value!;
-                  },
-                  decoration: InputDecoration(
-                    labelText: 'Select Priority',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                      borderSide: const BorderSide(
-                        color: Colors.black,
-                      ),
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey.shade200,
-                    labelStyle: GoogleFonts.inter(
-                      color: Colors.grey.shade600,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      vertical: 10.0,
-                      horizontal: 10.0,
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please select a priority';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text('Deadline',
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        )),
-                  ],
-                ),
-                SizedBox(height: 10),
-                TextFormField(
-                  controller: _deadlineController,
-                  readOnly: true,
-                  decoration: InputDecoration(
-                    labelText: 'Select Deadline',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                      borderSide: const BorderSide(
-                        color: Colors.black,
-                      ),
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey.shade200,
-                    labelStyle: GoogleFonts.inter(
-                      color: Colors.grey.shade600,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      vertical: 10.0,
-                      horizontal: 10.0,
-                    ),
-                  ),
-                  onTap: () async {
-                    DateTime? pickedDate = await showDatePicker(
-                      context: context,
-                      initialDate: _selectedDeadline,
-                      firstDate: DateTime.now(),
-                      lastDate: DateTime(2100),
-                    );
-                    if (pickedDate != null) {
-                      TimeOfDay? pickedTime = await showTimePicker(
-                        context: context,
-                        initialTime: TimeOfDay.now(),
-                      );
-                      if (pickedTime != null) {
-                        final DateTime combinedDateTime = DateTime(
-                          pickedDate.year,
-                          pickedDate.month,
-                          pickedDate.day,
-                          pickedTime.hour,
-                          pickedTime.minute,
-                        );
-                        _selectedDeadline = combinedDateTime;
-                        _deadlineController.text =
-                            DateFormat('yyyy-MM-dd HH:mm')
-                                .format(combinedDateTime);
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a title';
                       }
-                    }
-                  },
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please select a deadline';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text('Time to Alert',
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text('Description',
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: !isDarkMode
+                                ? AppColor.blackColor
+                                : AppColor.whiteColor,
+                          )),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  TextFormField(
+                    key: const Key('description_field'),
+                    minLines: 3, // Minimum lines to show
+                    maxLines: 3, // Maximum lines to allow
+                    controller: _descriptionController,
+                    decoration: InputDecoration(
+                      labelText: 'Description',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5.0),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5.0),
+                        borderSide: const BorderSide(
                           color: Colors.black,
-                        )),
-                  ],
-                ),
-                SizedBox(height: 10),
-                TextFormField(
-                  controller: _timeToAlertController,
-                  readOnly: true,
-                  decoration: InputDecoration(
-                    labelText: 'Select Time to Alert',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                      borderSide: const BorderSide(
-                        color: Colors.black,
+                        ),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey.shade200,
+                      labelStyle: GoogleFonts.inter(
+                        color: Colors.grey.shade600,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 10.0,
+                        horizontal: 10.0,
                       ),
                     ),
-                    filled: true,
-                    fillColor: Colors.grey.shade200,
-                    labelStyle: GoogleFonts.inter(
-                      color: Colors.grey.shade600,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      vertical: 10.0,
-                      horizontal: 10.0,
-                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a description';
+                      }
+                      return null;
+                    },
                   ),
-                  onTap: () async {
-                    Duration? pickedDuration = await showDurationPicker(
-                      context: context,
-                      initialTime: _selectedTimeToAlert,
-                    );
-                    if (pickedDuration != null) {
-                      _selectedTimeToAlert = pickedDuration;
-                      _timeToAlertController.text =
-                          _formatDuration(pickedDuration);
-                    }
-                  },
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please select a time to alert';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 20),
-                CustomElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        onSave(
-                          _titleController.text,
-                          _descriptionController.text,
-                          _selectedPriority,
-                          _selectedDeadline,
-                          _selectedTimeToAlert.toString(),
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text('Priority',
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: !isDarkMode
+                                ? AppColor.blackColor
+                                : AppColor.whiteColor,
+                          )),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  DropdownButtonFormField<String>(
+                    value: _selectedPriority,
+                    items: _priorities.map((String priority) {
+                      return DropdownMenuItem<String>(
+                        value: priority,
+                        child: Text(priority.capitalize()),
+                      );
+                    }).toList(),
+                    onChanged: (String? value) {
+                      _selectedPriority = value!;
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'Select Priority',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5.0),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5.0),
+                        borderSide: const BorderSide(
+                          color: Colors.black,
+                        ),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey.shade200,
+                      labelStyle: GoogleFonts.inter(
+                        color: Colors.grey.shade600,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 10.0,
+                        horizontal: 10.0,
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please select a priority';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text('Deadline',
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: !isDarkMode
+                                ? AppColor.blackColor
+                                : AppColor.whiteColor,
+                          )),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  TextFormField(
+                    controller: _deadlineController,
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      labelText: 'Select Deadline',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5.0),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5.0),
+                        borderSide: const BorderSide(
+                          color: Colors.black,
+                        ),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey.shade200,
+                      labelStyle: GoogleFonts.inter(
+                        color: Colors.grey.shade600,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 10.0,
+                        horizontal: 10.0,
+                      ),
+                    ),
+                    onTap: () async {
+                      DateTime? pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: _selectedDeadline,
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime(2100),
+                      );
+                      if (pickedDate != null) {
+                        TimeOfDay? pickedTime = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now(),
                         );
-                        Navigator.pop(context);
+                        if (pickedTime != null) {
+                          final DateTime combinedDateTime = DateTime(
+                            pickedDate.year,
+                            pickedDate.month,
+                            pickedDate.day,
+                            pickedTime.hour,
+                            pickedTime.minute,
+                          );
+                          _selectedDeadline = combinedDateTime;
+                          _deadlineController.text =
+                              DateFormat('yyyy-MM-dd HH:mm')
+                                  .format(combinedDateTime);
+                        }
                       }
                     },
-                    text: 'Add Task'),
-                SizedBox(height: 10),
-              ],
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please select a deadline';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text('Time to Alert',
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: !isDarkMode
+                                ? AppColor.blackColor
+                                : AppColor.whiteColor,
+                          )),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  TextFormField(
+                    controller: _timeToAlertController,
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      labelText: 'Select Time to Alert',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5.0),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5.0),
+                        borderSide: const BorderSide(
+                          color: Colors.black,
+                        ),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey.shade200,
+                      labelStyle: GoogleFonts.inter(
+                        color: Colors.grey.shade600,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 10.0,
+                        horizontal: 10.0,
+                      ),
+                    ),
+                    onTap: () async {
+                      Duration? pickedDuration = await showDurationPicker(
+                        context: context,
+                        initialTime: _selectedTimeToAlert,
+                      );
+                      if (pickedDuration != null) {
+                        _selectedTimeToAlert = pickedDuration;
+                        _timeToAlertController.text =
+                            _formatDuration(pickedDuration);
+                      }
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please select a time to alert';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 20),
+                  CustomElevatedButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          onSave(
+                            _titleController.text,
+                            _descriptionController.text,
+                            _selectedPriority,
+                            _selectedDeadline,
+                            _selectedTimeToAlert.toString(),
+                          );
+                          Navigator.pop(context);
+                        }
+                      },
+                      text: 'Add Task'),
+                  SizedBox(height: 10),
+                ],
+              ),
             ),
           ),
         ),
@@ -1376,316 +1345,334 @@ void showTaskUpdateFormBottomSheet({
     context: context,
     isScrollControlled: true,
     builder: (context) {
-      return Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-          top: 20,
-          left: 20,
-          right: 20,
-        ),
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Title',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
+      bool isDarkMode = Provider.of<ThemeProvider>(context).isDarkMode;
+
+      return Container(
+        color: !isDarkMode
+            ? AppColor.backgroundColor
+            : AppColor.darkModeBackgroundColor,
+        child: Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            top: 20,
+            left: 20,
+            right: 20,
+          ),
+          child: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Title',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: !isDarkMode
+                              ? AppColor.blackColor
+                              : AppColor.whiteColor,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 10),
-                TextFormField(
-                  key: const Key('title_field'),
-                  controller: _titleController,
-                  decoration: InputDecoration(
-                    labelText: 'Title',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                      borderSide: const BorderSide(
-                        color: Colors.black,
-                      ),
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey.shade200,
-                    labelStyle: TextStyle(
-                      color: Colors.grey.shade600,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      vertical: 10.0,
-                      horizontal: 10.0,
-                    ),
+                    ],
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a title';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Description',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                  SizedBox(height: 10),
+                  TextFormField(
+                    key: const Key('title_field'),
+                    controller: _titleController,
+                    decoration: InputDecoration(
+                      labelText: 'Title',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5.0),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5.0),
+                        borderSide: const BorderSide(
+                          color: Colors.black,
+                        ),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey.shade200,
+                      labelStyle: TextStyle(
+                        color: Colors.grey.shade600,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 10.0,
+                        horizontal: 10.0,
                       ),
                     ),
-                  ],
-                ),
-                SizedBox(height: 10),
-                TextFormField(
-                  key: const Key('description_field'),
-                  controller: _descriptionController,
-                  minLines: 3, // Minimum lines to show
-                  maxLines: 3, // Maximum lines to allow
-                  decoration: InputDecoration(
-                    labelText: 'Description',
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(5.0)),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                      borderSide: const BorderSide(color: Colors.black),
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey.shade200,
-                    labelStyle: TextStyle(color: Colors.grey.shade600),
-                    contentPadding: const EdgeInsets.symmetric(
-                        vertical: 10.0, horizontal: 10.0),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a description';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Priority',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 10),
-                DropdownButtonFormField<String>(
-                  value: _selectedPriority,
-                  items: _priorities.map((String priority) {
-                    return DropdownMenuItem<String>(
-                      value: priority,
-                      child: Text(priority.capitalize()),
-                    );
-                  }).toList(),
-                  onChanged: (String? value) {
-                    _selectedPriority = value!;
-                  },
-                  decoration: InputDecoration(
-                    labelText: 'Select Priority',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                      borderSide: const BorderSide(
-                        color: Colors.black,
-                      ),
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey.shade200,
-                    labelStyle: TextStyle(
-                      color: Colors.grey.shade600,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      vertical: 10.0,
-                      horizontal: 10.0,
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please select a priority';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Deadline',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 10),
-                TextFormField(
-                  controller: _deadlineController,
-                  readOnly: true,
-                  decoration: InputDecoration(
-                    labelText: 'Select Deadline',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                      borderSide: const BorderSide(
-                        color: Colors.black,
-                      ),
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey.shade200,
-                    labelStyle: TextStyle(
-                      color: Colors.grey.shade600,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      vertical: 10.0,
-                      horizontal: 10.0,
-                    ),
-                  ),
-                  onTap: () async {
-                    DateTime? pickedDate = await showDatePicker(
-                      context: context,
-                      initialDate: DateTime.now(),
-                      firstDate: DateTime.now(),
-                      lastDate: DateTime(2100),
-                    );
-                    if (pickedDate != null) {
-                      TimeOfDay? pickedTime = await showTimePicker(
-                        context: context,
-                        initialTime: TimeOfDay.now(),
-                      );
-                      if (pickedTime != null) {
-                        final DateTime combinedDateTime = DateTime(
-                          pickedDate.year,
-                          pickedDate.month,
-                          pickedDate.day,
-                          pickedTime.hour,
-                          pickedTime.minute,
-                        );
-                        _selectedDeadline = combinedDateTime;
-                        _deadlineController.text =
-                            DateFormat('yyyy-MM-dd HH:mm')
-                                .format(combinedDateTime);
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a title';
                       }
-                    }
-                  },
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please select a deadline';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Time to Alert',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 10),
-                TextFormField(
-                  controller: _timeToAlertController,
-                  readOnly: true,
-                  decoration: InputDecoration(
-                    labelText: 'Select Time to Alert',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                      borderSide: const BorderSide(
-                        color: Colors.black,
-                      ),
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey.shade200,
-                    labelStyle: TextStyle(
-                      color: Colors.grey.shade600,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      vertical: 10.0,
-                      horizontal: 10.0,
-                    ),
+                      return null;
+                    },
                   ),
-                  onTap: () async {
-                    Duration? pickedDuration = await showDurationPicker(
-                      context: context,
-                      initialTime: _selectedTimeToAlert,
-                    );
-                    if (pickedDuration != null) {
-                      _selectedTimeToAlert = pickedDuration;
-                      _timeToAlertController.text =
-                          _formatDuration(pickedDuration);
-                    }
-                  },
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please select a time to alert';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 20),
-                CustomElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      bool deadlineChanged = _selectedDeadline != task.deadline;
-                      bool durationChanged = _selectedTimeToAlert !=
-                          Duration(
-                            hours: int.parse(parts[0]),
-                            minutes: int.parse(parts[1]),
-                            seconds: int.parse(parts[2]),
-                          );
-                      onSave(
-                        _titleController.text,
-                        _descriptionController.text,
-                        _selectedPriority,
-                        _selectedDeadline,
-                        _formatDuration(_selectedTimeToAlert),
-                        deadlineChanged,
-                        durationChanged,
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Description',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: !isDarkMode
+                              ? AppColor.blackColor
+                              : AppColor.whiteColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  TextFormField(
+                    key: const Key('description_field'),
+                    controller: _descriptionController,
+                    minLines: 3, // Minimum lines to show
+                    maxLines: 3, // Maximum lines to allow
+                    decoration: InputDecoration(
+                      labelText: 'Description',
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(5.0)),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5.0),
+                        borderSide: const BorderSide(color: Colors.black),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey.shade200,
+                      labelStyle: TextStyle(color: Colors.grey.shade600),
+                      contentPadding: const EdgeInsets.symmetric(
+                          vertical: 10.0, horizontal: 10.0),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a description';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Priority',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: !isDarkMode
+                              ? AppColor.blackColor
+                              : AppColor.whiteColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  DropdownButtonFormField<String>(
+                    value: _selectedPriority,
+                    items: _priorities.map((String priority) {
+                      return DropdownMenuItem<String>(
+                        value: priority,
+                        child: Text(priority.capitalize()),
                       );
-                      Navigator.pop(context);
-                    }
-                  },
-                  text: 'Update Task',
-                ),
-                SizedBox(height: 10),
-              ],
+                    }).toList(),
+                    onChanged: (String? value) {
+                      _selectedPriority = value!;
+                    },
+                    decoration: InputDecoration(
+                      labelText: 'Select Priority',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5.0),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5.0),
+                        borderSide: const BorderSide(
+                          color: Colors.black,
+                        ),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey.shade200,
+                      labelStyle: TextStyle(
+                        color: Colors.grey.shade600,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 10.0,
+                        horizontal: 10.0,
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please select a priority';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Deadline',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: !isDarkMode
+                              ? AppColor.blackColor
+                              : AppColor.whiteColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  TextFormField(
+                    controller: _deadlineController,
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      labelText: 'Select Deadline',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5.0),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5.0),
+                        borderSide: const BorderSide(
+                          color: Colors.black,
+                        ),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey.shade200,
+                      labelStyle: TextStyle(
+                        color: Colors.grey.shade600,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 10.0,
+                        horizontal: 10.0,
+                      ),
+                    ),
+                    onTap: () async {
+                      DateTime? pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime(2100),
+                      );
+                      if (pickedDate != null) {
+                        TimeOfDay? pickedTime = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.now(),
+                        );
+                        if (pickedTime != null) {
+                          final DateTime combinedDateTime = DateTime(
+                            pickedDate.year,
+                            pickedDate.month,
+                            pickedDate.day,
+                            pickedTime.hour,
+                            pickedTime.minute,
+                          );
+                          _selectedDeadline = combinedDateTime;
+                          _deadlineController.text =
+                              DateFormat('yyyy-MM-dd HH:mm')
+                                  .format(combinedDateTime);
+                        }
+                      }
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please select a deadline';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Time to Alert',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: !isDarkMode
+                              ? AppColor.blackColor
+                              : AppColor.whiteColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  TextFormField(
+                    controller: _timeToAlertController,
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      labelText: 'Select Time to Alert',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5.0),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(5.0),
+                        borderSide: const BorderSide(
+                          color: Colors.black,
+                        ),
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey.shade200,
+                      labelStyle: TextStyle(
+                        color: Colors.grey.shade600,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 10.0,
+                        horizontal: 10.0,
+                      ),
+                    ),
+                    onTap: () async {
+                      Duration? pickedDuration = await showDurationPicker(
+                        context: context,
+                        initialTime: _selectedTimeToAlert,
+                      );
+                      if (pickedDuration != null) {
+                        _selectedTimeToAlert = pickedDuration;
+                        _timeToAlertController.text =
+                            _formatDuration(pickedDuration);
+                      }
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please select a time to alert';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 20),
+                  CustomElevatedButton(
+                    onPressed: () {
+                      if (_formKey.currentState!.validate()) {
+                        bool deadlineChanged =
+                            _selectedDeadline != task.deadline;
+                        bool durationChanged = _selectedTimeToAlert !=
+                            Duration(
+                              hours: int.parse(parts[0]),
+                              minutes: int.parse(parts[1]),
+                              seconds: int.parse(parts[2]),
+                            );
+                        onSave(
+                          _titleController.text,
+                          _descriptionController.text,
+                          _selectedPriority,
+                          _selectedDeadline,
+                          _formatDuration(_selectedTimeToAlert),
+                          deadlineChanged,
+                          durationChanged,
+                        );
+                        Navigator.pop(context);
+                      }
+                    },
+                    text: 'Update Task',
+                  ),
+                  SizedBox(height: 10),
+                ],
+              ),
             ),
           ),
         ),
@@ -1800,9 +1787,7 @@ Widget _buildLoadedState(
                   taskOwner: member.id,
                   mission: task.mission,
                 );
-                taskBloc.add(UpdateTask(
-                  newTask,
-                ));
+                taskBloc.add(UpdateTask(newTask, missionId: task.mission));
                 Navigator.pop(context); // Close the bottom sheet
               },
             );

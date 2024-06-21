@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:taskplus/Bloc/category/category_bloc.dart';
 import 'package:taskplus/Bloc/category/category_event.dart';
 import 'package:taskplus/Bloc/category/category_state.dart';
@@ -14,12 +15,14 @@ import 'package:taskplus/Controller/Authentification.dart';
 import 'package:taskplus/Controller/MmberServices.dart';
 import 'package:taskplus/Controller/category_repo.dart';
 import 'package:taskplus/Controller/mission_repo.dart';
+import 'package:taskplus/Controller/themeProvider.dart';
 import 'package:taskplus/Controller/workspaceService.dart';
 import 'package:taskplus/Model/Category.dart';
 import 'package:taskplus/Model/Member.dart';
 import 'package:taskplus/Model/Messions.dart';
 import 'package:taskplus/Model/workspace.dart';
 import 'package:taskplus/ui/Screens/MissionDetailsScreen.dart';
+import 'package:taskplus/ui/Screens/settingsScreen.dart';
 import 'package:taskplus/ui/Widgets/Button.dart';
 import 'package:taskplus/utils/TextStyle.dart';
 import 'package:taskplus/utils/colors.dart';
@@ -100,14 +103,23 @@ class _MissionScreenState extends State<MissionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool isDarkMode = Provider.of<ThemeProvider>(context).isDarkMode;
+
     return Scaffold(
       appBar: customAppBarWithoutLeadingWithActions(
         "Missions",
         AppColor.blackColor,
         context,
-        () {},
+        () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => SettingsScreen(),
+              ));
+        },
       ),
-      backgroundColor: AppColor.backgroundColor,
+      backgroundColor:
+          !isDarkMode ? AppColor.backgroundColor : AppColor.blackColor,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -124,7 +136,10 @@ class _MissionScreenState extends State<MissionScreen> {
                       width: MediaQuery.of(context).size.width * 0.55,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(5),
-                        border: Border.all(color: AppColor.blackColor),
+                        border: Border.all(
+                          color:
+                              !isDarkMode ? AppColor.blackColor : Colors.white,
+                        ),
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -132,7 +147,13 @@ class _MissionScreenState extends State<MissionScreen> {
                         children: [
                           Text(
                             "Hello, $username",
-                            style: semiBold20,
+                            style: GoogleFonts.inter(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                              color: !isDarkMode
+                                  ? AppColor.blackColor
+                                  : Colors.white,
+                            ),
                           ),
                           Column(
                             children: [
@@ -151,10 +172,21 @@ class _MissionScreenState extends State<MissionScreen> {
                                           children: [
                                             TextSpan(
                                               text: "Start working at , ",
+                                              style: GoogleFonts.inter(
+                                                color: !isDarkMode
+                                                    ? AppColor.blackColor
+                                                    : Colors.white,
+                                              ),
                                             ),
                                             TextSpan(
                                               text: workspace,
-                                              style: Regular12,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.normal,
+                                                color: !isDarkMode
+                                                    ? AppColor.blackColor
+                                                    : Colors.white,
+                                              ),
                                             ),
                                           ],
                                         ),
@@ -243,12 +275,13 @@ class _MissionScreenState extends State<MissionScreen> {
                   style: GoogleFonts.inter(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: !isDarkMode ? AppColor.blackColor : Colors.white,
                   )),
               Row(
                 children: [
                   Expanded(
                     child: DropdownButton<String>(
+                      iconEnabledColor: AppColor.greenColor,
                       hint: Text("Category"),
                       value: selectedCategory,
                       onChanged: (value) {
@@ -256,11 +289,12 @@ class _MissionScreenState extends State<MissionScreen> {
                           selectedCategory = value;
                         });
                       },
-                      items: buildCategoryDropdownItems(),
+                      items: buildCategoryDropdownItems(context),
                     ),
                   ),
                   Expanded(
                     child: DropdownButton<String>(
+                      iconEnabledColor: AppColor.greenColor,
                       hint: Text("Priority"),
                       value: selectedPriority,
                       onChanged: (value) {
@@ -273,6 +307,11 @@ class _MissionScreenState extends State<MissionScreen> {
                   ),
                   SizedBox(width: 10),
                   Checkbox(
+                    side: BorderSide(
+                        color: isDarkMode
+                            ? AppColor.whiteColor
+                            : AppColor.blackColor,
+                        width: 2),
                     value: orderedOnly,
                     activeColor: AppColor.greenColor,
                     onChanged: (value) {
@@ -281,7 +320,15 @@ class _MissionScreenState extends State<MissionScreen> {
                       });
                     },
                   ),
-                  Text("Ordered Only"),
+                  Text(
+                    "Ordered Only",
+                    style: GoogleFonts.inter(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: !isDarkMode
+                            ? AppColor.blackColor
+                            : AppColor.whiteColor),
+                  ),
                 ],
               ),
               SizedBox(height: 10),
@@ -289,7 +336,7 @@ class _MissionScreenState extends State<MissionScreen> {
                   style: GoogleFonts.inter(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: !isDarkMode ? AppColor.blackColor : Colors.white,
                   )),
               SizedBox(height: 10),
               Expanded(
@@ -310,17 +357,6 @@ class _MissionScreenState extends State<MissionScreen> {
                               categoryState is CategoryLoadSuccess) {
                             final missions =
                                 missionState.missions.where((mission) {
-                              final category =
-                                  categoryState.categories.firstWhere(
-                                (category) => category.id == mission.category,
-                                orElse: () => Category(
-                                  id: 0,
-                                  name: 'Unknown',
-                                  color: '#000000',
-                                  workspace: 0,
-                                ),
-                              );
-
                               return (selectedCategory == null ||
                                       mission.category.toString() ==
                                           selectedCategory) &&
@@ -346,216 +382,7 @@ class _MissionScreenState extends State<MissionScreen> {
                                   ),
                                 );
 
-                                return GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              MissionDetailsScreen(
-                                            mission: mission,
-                                            category: category,
-                                          ),
-                                        ));
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(bottom: 10),
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: AppColor.whiteColor,
-                                        borderRadius: BorderRadius.circular(5),
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          ListTile(
-                                            title: Text(mission.title,
-                                                style: Bold12),
-                                            trailing: Icon(Icons.arrow_forward),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 16.0,
-                                                vertical: 8.0),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [ Row(
-                                                  children: [
-                                                    GestureDetector(
-                                                      onTap: () {
-                                                        _showDeleteConfirmationDialog(
-                                                            context,
-                                                            mission.id);
-                                                      },
-                                                      child: Icon(
-                                                        Icons.delete,
-                                                        color:
-                                                            AppColor.redColor,
-                                                      ),
-                                                    ),
-                                                    SizedBox(width: 16),
-                                                    GestureDetector(
-                                                      onTap: () {
-                                                        showEditMissionFormBottomSheet(
-                                                          context: context,
-                                                          mission: mission,
-                                                          onSave: (String title,
-                                                              String priority,
-                                                              int category) {
-                                                            context
-                                                                .read<
-                                                                    MissionBloc>()
-                                                                .add(
-                                                                  UpdateMission(
-                                                                    Mission(
-                                                                      id: mission
-                                                                          .id,
-                                                                      title:
-                                                                          title,
-                                                                      priority:
-                                                                          priority,
-                                                                      ordered:
-                                                                          mission
-                                                                              .ordered,
-                                                                      timeCreated:
-                                                                          mission
-                                                                              .timeCreated,
-                                                                      category:
-                                                                          category,
-                                                                      workspace:
-                                                                          mission
-                                                                              .workspace,
-                                                                    ),
-                                                                  ),
-                                                                );
-                                                          },
-                                                        );
-                                                      },
-                                                      child: Icon(
-                                                        Icons.edit,
-                                                        color: AppColor
-                                                            .orangeColor,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                Row(
-                                                  children: [
-                                                    Text(
-                                                        DateFormat(
-                                                                'yyyy-MM-dd HH:mm')
-                                                            .format(mission
-                                                                .timeCreated),
-                                                        style:
-                                                            GoogleFonts.inter(
-                                                          fontSize: 14,
-                                                          color: AppColor
-                                                              .blackColor,
-                                                        )),
-                                                    SizedBox(width: 8),
-                                                    Icon(
-                                                      Icons.date_range_outlined,
-                                                      color:
-                                                          AppColor.blackColor,
-                                                      size: 20,
-                                                    ),
-                                                  ],
-                                                ),],
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 16.0,
-                                                vertical: 8.0),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceAround,
-                                              children: [
-                                                Container(
-                                                  padding: EdgeInsets.symmetric(
-                                                      horizontal: 8,
-                                                      vertical: 4),
-                                                  decoration: BoxDecoration(
-                                                    color: getPriorityColor(
-                                                        mission.priority),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            5),
-                                                  ),
-                                                  child: Text(mission.priority,
-                                                      style: GoogleFonts.inter(
-                                                        color:
-                                                            AppColor.whiteColor,
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      )),
-                                                ),
-                                                SizedBox(width: 8),
-                                                Container(
-                                                  padding: EdgeInsets.symmetric(
-                                                      horizontal: 8,
-                                                      vertical: 4),
-                                                  decoration: BoxDecoration(
-                                                    color: Color(int.parse(
-                                                        category.color
-                                                            .replaceFirst(
-                                                                '#', '0xff'))),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            5),
-                                                  ),
-                                                  child: Text(category.name,
-                                                      style: GoogleFonts.inter(
-                                                        color: getTextColor(Color(
-                                                            int.parse(category
-                                                                .color
-                                                                .replaceFirst(
-                                                                    '#',
-                                                                    '0xff')))),
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      )),
-                                                ),
-                                                SizedBox(width: 8),
-                                                mission.ordered
-                                                    ? Container(
-                                                        padding: EdgeInsets
-                                                            .symmetric(
-                                                                horizontal: 8,
-                                                                vertical: 4),
-                                                        decoration:
-                                                            BoxDecoration(
-                                                          color: AppColor
-                                                              .greenColor,
-                                                          borderRadius:
-                                                              BorderRadius
-                                                                  .circular(5),
-                                                        ),
-                                                        child: Text('Ordered',
-                                                            style: GoogleFonts
-                                                                .inter(
-                                                              color: AppColor
-                                                                  .whiteColor,
-                                                              fontSize: 12,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                            )),
-                                                      )
-                                                    : Container(),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                );
+                                return MissionBody(context, mission, category);
                               },
                             );
                           } else if (missionState is MissionOperationFailure ||
@@ -584,13 +411,192 @@ class _MissionScreenState extends State<MissionScreen> {
     );
   }
 
-  List<DropdownMenuItem<String>> buildCategoryDropdownItems() {
+  GestureDetector MissionBody(
+      BuildContext context, Mission mission, Category category) {
+    bool isDarkMode = Provider.of<ThemeProvider>(context).isDarkMode;
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => MissionDetailsScreen(
+                mission: mission,
+                category: category,
+              ),
+            ));
+      },
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: Container(
+          decoration: BoxDecoration(
+            color: !isDarkMode
+                ? AppColor.whiteColor
+                : AppColor.darkModeBackgroundColor,
+            borderRadius: BorderRadius.circular(5),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ListTile(
+                title: Text(
+                  mission.title,
+                  style: GoogleFonts.inter(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: !isDarkMode
+                          ? AppColor.blackColor
+                          : AppColor.whiteColor),
+                ),
+                trailing: Icon(Icons.arrow_forward),
+              ),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            _showDeleteConfirmationDialog(context, mission.id);
+                          },
+                          child: Icon(
+                            Icons.delete,
+                            color: AppColor.redColor,
+                          ),
+                        ),
+                        SizedBox(width: 16),
+                        GestureDetector(
+                          onTap: () {
+                            showEditMissionFormBottomSheet(
+                              context: context,
+                              mission: mission,
+                              onSave: (String title, String priority,
+                                  int category) {
+                                context.read<MissionBloc>().add(
+                                      UpdateMission(
+                                        Mission(
+                                          id: mission.id,
+                                          title: title,
+                                          priority: priority,
+                                          ordered: mission.ordered,
+                                          timeCreated: mission.timeCreated,
+                                          category: category,
+                                          workspace: mission.workspace,
+                                        ),
+                                      ),
+                                    );
+                              },
+                            );
+                          },
+                          child: Icon(
+                            Icons.edit,
+                            color: AppColor.orangeColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Text(
+                          DateFormat('yyyy-MM-dd HH:mm')
+                              .format(mission.timeCreated),
+                          style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: !isDarkMode
+                                  ? AppColor.blackColor
+                                  : AppColor.whiteColor),
+                        ),
+                        SizedBox(width: 8),
+                        Icon(
+                          Icons.date_range_outlined,
+                          color: !isDarkMode
+                              ? AppColor.blackColor
+                              : AppColor.whiteColor,
+                          size: 20,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: getPriorityColor(mission.priority),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Text(mission.priority,
+                          style: GoogleFonts.inter(
+                            color: AppColor.whiteColor,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          )),
+                    ),
+                    SizedBox(width: 8),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Color(int.parse(
+                            category.color.replaceFirst('#', '0xff'))),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Text(category.name,
+                          style: GoogleFonts.inter(
+                            color: getTextColor(Color(int.parse(
+                                category.color.replaceFirst('#', '0xff')))),
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          )),
+                    ),
+                    SizedBox(width: 8),
+                    mission.ordered
+                        ? Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: AppColor.greenColor,
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: Text('Ordered',
+                                style: GoogleFonts.inter(
+                                  color: AppColor.whiteColor,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                )),
+                          )
+                        : Container(),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<DropdownMenuItem<String>> buildCategoryDropdownItems(
+      BuildContext context) {
     List<DropdownMenuItem<String>> items = [];
 
     items.add(
       DropdownMenuItem(
         value: null,
-        child: Text("All"),
+        child: Text(
+          "All",
+          style: TextStyle(
+            color: AppColor.greenColor,
+          ),
+        ),
       ),
     );
 
@@ -599,7 +605,12 @@ class _MissionScreenState extends State<MissionScreen> {
       items.addAll(categoryState.categories.map((category) {
         return DropdownMenuItem<String>(
           value: category.id.toString(),
-          child: Text(category.name),
+          child: Text(
+            category.name,
+            style: TextStyle(
+              color: AppColor.blackColor,
+            ),
+          ),
         );
       }).toList());
     }
@@ -613,7 +624,12 @@ class _MissionScreenState extends State<MissionScreen> {
     items.add(
       DropdownMenuItem(
         value: null,
-        child: Text("All"),
+        child: Text(
+          "All",
+          style: TextStyle(
+            color: AppColor.greenColor,
+          ),
+        ),
       ),
     );
 
@@ -652,20 +668,24 @@ class _MissionScreenState extends State<MissionScreen> {
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
+        bool isDarkMode = Provider.of<ThemeProvider>(context).isDarkMode;
+
         return AlertDialog(
+          backgroundColor:
+              isDarkMode ? AppColor.blackColor : AppColor.whiteColor,
           title: Text(
             "Delete Mission",
             style: GoogleFonts.inter(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: AppColor.blackColor,
+              color: !isDarkMode ? AppColor.blackColor : AppColor.whiteColor,
             ),
           ),
           content: Text(
             "Are you sure you want to delete this mission?",
             style: GoogleFonts.inter(
               fontSize: 16,
-              color: AppColor.blackColor,
+              color: !isDarkMode ? AppColor.blackColor : AppColor.whiteColor,
             ),
           ),
           actions: <Widget>[
@@ -699,7 +719,6 @@ class _MissionScreenState extends State<MissionScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
           ),
-          backgroundColor: AppColor.whiteColor,
           elevation: 10,
         );
       },
@@ -740,277 +759,297 @@ class _MissionScreenState extends State<MissionScreen> {
               builder: (context, state) {
                 return StatefulBuilder(
                   builder: (BuildContext context, StateSetter setState) {
-                    return Padding(
-                      padding: EdgeInsets.only(
-                        bottom: MediaQuery.of(context).viewInsets.bottom,
-                        top: 20,
-                        left: 20,
-                        right: 20,
-                      ),
-                      child: Form(
-                        key: _formKey,
-                        child: SingleChildScrollView(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Text('Title',
+                    bool isDarkMode =
+                        Provider.of<ThemeProvider>(context).isDarkMode;
+
+                    return Container(
+                      color: isDarkMode
+                          ? AppColor.blackColor
+                          : AppColor.whiteColor,
+                      child: Padding(
+                        padding: EdgeInsets.only(
+                          bottom: MediaQuery.of(context).viewInsets.bottom,
+                          top: 20,
+                          left: 20,
+                          right: 20,
+                        ),
+                        child: Form(
+                          key: _formKey,
+                          child: SingleChildScrollView(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Title',
                                       style: GoogleFonts.inter(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: !isDarkMode
+                                              ? AppColor.blackColor
+                                              : AppColor.whiteColor),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 10),
+                                TextFormField(
+                                  key: const Key('title_field'),
+                                  controller: _titleController,
+                                  decoration: InputDecoration(
+                                    labelText: 'Title',
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(5.0),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(5.0),
+                                      borderSide: const BorderSide(
                                         color: Colors.black,
-                                      )),
-                                ],
-                              ),
-                              SizedBox(height: 10),
-                              TextFormField(
-                                key: const Key('title_field'),
-                                controller: _titleController,
-                                decoration: InputDecoration(
-                                  labelText: 'Title',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(5.0),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(5.0),
-                                    borderSide: const BorderSide(
-                                      color: Colors.black,
+                                      ),
+                                    ),
+                                    filled: true,
+                                    fillColor: Colors.grey.shade200,
+                                    labelStyle: GoogleFonts.inter(
+                                      color: Colors.grey.shade600,
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 10.0,
+                                      horizontal: 10.0,
                                     ),
                                   ),
-                                  filled: true,
-                                  fillColor: Colors.grey.shade200,
-                                  labelStyle: GoogleFonts.inter(
-                                    color: Colors.grey.shade600,
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 10.0,
-                                    horizontal: 10.0,
-                                  ),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter a title';
+                                    }
+                                    return null;
+                                  },
                                 ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter a title';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              SizedBox(height: 10),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Text('Priority',
+                                SizedBox(height: 10),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Priority',
                                       style: GoogleFonts.inter(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
-                                      )),
-                                ],
-                              ),
-                              SizedBox(height: 10),
-                              DropdownButtonFormField<String>(
-                                value: _selectedPriority,
-                                items: _priorities.map((String priority) {
-                                  return DropdownMenuItem<String>(
-                                    value: priority,
-                                    child: Text(priority.capitalize()),
-                                  );
-                                }).toList(),
-                                onChanged: (String? value) {
-                                  setState(() {
-                                    _selectedPriority = value!;
-                                  });
-                                },
-                                decoration: InputDecoration(
-                                  labelText: 'Select Priority',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(5.0),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(5.0),
-                                    borderSide: const BorderSide(
-                                      color: Colors.black,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: !isDarkMode
+                                              ? AppColor.blackColor
+                                              : AppColor.whiteColor),
                                     ),
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.grey.shade200,
-                                  labelStyle: GoogleFonts.inter(
-                                    color: Colors.grey.shade600,
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 10.0,
-                                    horizontal: 10.0,
-                                  ),
+                                  ],
                                 ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please select a priority';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              SizedBox(height: 10),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Category',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
+                                SizedBox(height: 10),
+                                DropdownButtonFormField<String>(
+                                  value: _selectedPriority,
+                                  items: _priorities.map((String priority) {
+                                    return DropdownMenuItem<String>(
+                                      value: priority,
+                                      child: Text(priority.capitalize()),
+                                    );
+                                  }).toList(),
+                                  onChanged: (String? value) {
+                                    setState(() {
+                                      _selectedPriority = value!;
+                                    });
+                                  },
+                                  decoration: InputDecoration(
+                                    labelText: 'Select Priority',
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(5.0),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(5.0),
+                                      borderSide: const BorderSide(
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                    filled: true,
+                                    fillColor: Colors.grey.shade200,
+                                    labelStyle: GoogleFonts.inter(
+                                      color: Colors.grey.shade600,
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 10.0,
+                                      horizontal: 10.0,
                                     ),
                                   ),
-                                ],
-                              ),
-                              SizedBox(height: 10),
-                              Container(
-                                width: double.infinity,
-                                child: IntrinsicHeight(
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Flexible(
-                                        flex: 4,
-                                        child: Padding(
-                                          padding:
-                                              const EdgeInsets.only(right: 8.0),
-                                          child: state is CategoryLoadSuccess
-                                              ? DropdownButtonFormField<int>(
-                                                  value: null,
-                                                  items: state.categories
-                                                      .map((category) {
-                                                    return DropdownMenuItem<
-                                                        int>(
-                                                      value: category.id,
-                                                      child:
-                                                          Text(category.name),
-                                                    );
-                                                  }).toList(),
-                                                  onChanged: (int? value) {
-                                                    setState(() {
-                                                      _categoryController.text =
-                                                          value.toString();
-                                                    });
-                                                  },
-                                                  decoration: InputDecoration(
-                                                    labelText:
-                                                        'Select Category',
-                                                    border: OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              5.0),
-                                                    ),
-                                                    focusedBorder:
-                                                        OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              5.0),
-                                                      borderSide:
-                                                          const BorderSide(
-                                                        color: Colors.black,
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please select a priority';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                SizedBox(height: 10),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Category',
+                                      style: GoogleFonts.inter(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: !isDarkMode
+                                              ? AppColor.blackColor
+                                              : AppColor.whiteColor),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 10),
+                                Container(
+                                  width: double.infinity,
+                                  child: IntrinsicHeight(
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Flexible(
+                                          flex: 4,
+                                          child: Padding(
+                                            padding: const EdgeInsets.only(
+                                                right: 8.0),
+                                            child: state is CategoryLoadSuccess
+                                                ? DropdownButtonFormField<int>(
+                                                    value: null,
+                                                    items: state.categories
+                                                        .map((category) {
+                                                      return DropdownMenuItem<
+                                                          int>(
+                                                        value: category.id,
+                                                        child:
+                                                            Text(category.name),
+                                                      );
+                                                    }).toList(),
+                                                    onChanged: (int? value) {
+                                                      setState(() {
+                                                        _categoryController
+                                                                .text =
+                                                            value.toString();
+                                                      });
+                                                    },
+                                                    decoration: InputDecoration(
+                                                      labelText:
+                                                          'Select Category',
+                                                      border:
+                                                          OutlineInputBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(5.0),
+                                                      ),
+                                                      focusedBorder:
+                                                          OutlineInputBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(5.0),
+                                                        borderSide:
+                                                            const BorderSide(
+                                                          color: Colors.black,
+                                                        ),
+                                                      ),
+                                                      filled: true,
+                                                      fillColor:
+                                                          Colors.grey.shade200,
+                                                      labelStyle:
+                                                          GoogleFonts.inter(
+                                                        color: Colors
+                                                            .grey.shade600,
+                                                      ),
+                                                      contentPadding:
+                                                          const EdgeInsets
+                                                              .symmetric(
+                                                        vertical: 10.0,
+                                                        horizontal: 10.0,
                                                       ),
                                                     ),
-                                                    filled: true,
-                                                    fillColor:
-                                                        Colors.grey.shade200,
-                                                    labelStyle:
-                                                        GoogleFonts.inter(
-                                                      color:
-                                                          Colors.grey.shade600,
-                                                    ),
-                                                    contentPadding:
-                                                        const EdgeInsets
-                                                            .symmetric(
-                                                      vertical: 10.0,
-                                                      horizontal: 10.0,
-                                                    ),
+                                                    validator: (value) {
+                                                      if (value == null) {
+                                                        return 'Please select a category';
+                                                      }
+                                                      return null;
+                                                    },
+                                                  )
+                                                : Center(
+                                                    child:
+                                                        CircularProgressIndicator(),
                                                   ),
-                                                  validator: (value) {
-                                                    if (value == null) {
-                                                      return 'Please select a category';
-                                                    }
-                                                    return null;
-                                                  },
-                                                )
-                                              : Center(
-                                                  child:
-                                                      CircularProgressIndicator(),
-                                                ),
-                                        ),
-                                      ),
-                                      Flexible(
-                                        flex: 1,
-                                        child: Container(
-                                          width: 40,
-                                          height: 40,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: Colors.white,
                                           ),
-                                          child: IconButton(
-                                            onPressed: () {
-                                              final categoryBloc =
-                                                  BlocProvider.of<CategoryBloc>(
-                                                      context);
-                                              showColorPickerDialog(
-                                                  context, categoryBloc);
-                                            },
-                                            icon: Icon(
-                                              Icons.add,
-                                              color: AppColor.greenColor,
+                                        ),
+                                        Flexible(
+                                          flex: 1,
+                                          child: Container(
+                                            width: 40,
+                                            height: 40,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: Colors.white,
                                             ),
-                                            alignment: Alignment.center,
+                                            child: IconButton(
+                                              onPressed: () {
+                                                final categoryBloc =
+                                                    BlocProvider.of<
+                                                        CategoryBloc>(context);
+                                                showColorPickerDialog(
+                                                    context, categoryBloc);
+                                              },
+                                              icon: Icon(
+                                                Icons.add,
+                                                color: AppColor.greenColor,
+                                              ),
+                                              alignment: Alignment.center,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                              SizedBox(height: 10),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text('Ordered',
+                                SizedBox(height: 10),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Ordered',
                                       style: GoogleFonts.inter(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
-                                      )),
-                                  Switch(
-                                    value: _ordered,
-                                    onChanged: (bool value) {
-                                      setState(() {
-                                        _ordered = value;
-                                      });
-                                    },
-                                    activeColor: AppColor.greenColor,
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 20),
-                              CustomElevatedButton(
-                                onPressed: () {
-                                  if (_formKey.currentState!.validate()) {
-                                    onSave(
-                                      _titleController.text,
-                                      _selectedPriority,
-                                      _ordered,
-                                      int.parse(_categoryController.text),
-                                    );
-                                    Navigator.pop(context);
-                                  }
-                                },
-                                text: 'Add Mission',
-                              ),
-                              SizedBox(height: 10),
-                            ],
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: !isDarkMode
+                                              ? AppColor.blackColor
+                                              : AppColor.whiteColor),
+                                    ),
+                                    Switch(
+                                      value: _ordered,
+                                      onChanged: (bool value) {
+                                        setState(() {
+                                          _ordered = value;
+                                        });
+                                      },
+                                      activeColor: AppColor.greenColor,
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 20),
+                                CustomElevatedButton(
+                                  onPressed: () {
+                                    if (_formKey.currentState!.validate()) {
+                                      onSave(
+                                        _titleController.text,
+                                        _selectedPriority,
+                                        _ordered,
+                                        int.parse(_categoryController.text),
+                                      );
+                                      Navigator.pop(context);
+                                    }
+                                  },
+                                  text: 'Add Mission',
+                                ),
+                                SizedBox(height: 10),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -1072,205 +1111,217 @@ class _MissionScreenState extends State<MissionScreen> {
             ],
             child: BlocBuilder<CategoryBloc, CategoryState>(
               builder: (context, state) {
-                return StatefulBuilder(
-                  builder: (BuildContext context, StateSetter setState) {
-                    return Padding(
-                      padding: EdgeInsets.only(
-                        bottom: MediaQuery.of(context).viewInsets.bottom,
-                        top: 20,
-                        left: 20,
-                        right: 20,
-                      ),
-                      child: Form(
-                        key: _formKey,
-                        child: SingleChildScrollView(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Title',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColor.blackColor,
+                bool isDarkMode =
+                    Provider.of<ThemeProvider>(context).isDarkMode;
+
+                return Container(
+                  color: isDarkMode ? AppColor.blackColor : AppColor.whiteColor,
+                  child: StatefulBuilder(
+                    builder: (BuildContext context, StateSetter setState) {
+                      return Padding(
+                        padding: EdgeInsets.only(
+                          bottom: MediaQuery.of(context).viewInsets.bottom,
+                          top: 20,
+                          left: 20,
+                          right: 20,
+                        ),
+                        child: Form(
+                          key: _formKey,
+                          child: SingleChildScrollView(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: <Widget>[
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Title',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: !isDarkMode
+                                            ? AppColor.blackColor
+                                            : AppColor.whiteColor,
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 10),
-                              TextFormField(
-                                key: const Key('title_field'),
-                                controller: _titleController,
-                                decoration: InputDecoration(
-                                  labelText: 'Title',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(5.0),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(5.0),
-                                    borderSide: const BorderSide(
-                                      color: AppColor.blackColor,
-                                    ),
-                                  ),
-                                  filled: true,
-                                  fillColor: AppColor.secondColor,
-                                  labelStyle: GoogleFonts.inter(
-                                    color: AppColor.iconsColor,
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 10.0,
-                                    horizontal: 10.0,
-                                  ),
+                                  ],
                                 ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter a title';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              SizedBox(height: 10),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Priority',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColor.blackColor,
+                                SizedBox(height: 10),
+                                TextFormField(
+                                  key: const Key('title_field'),
+                                  controller: _titleController,
+                                  decoration: InputDecoration(
+                                    labelText: 'Title',
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(5.0),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(5.0),
+                                      borderSide: const BorderSide(
+                                        color: AppColor.blackColor,
+                                      ),
+                                    ),
+                                    filled: true,
+                                    fillColor: AppColor.secondColor,
+                                    labelStyle: GoogleFonts.inter(
+                                      color: AppColor.iconsColor,
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 10.0,
+                                      horizontal: 10.0,
                                     ),
                                   ),
-                                ],
-                              ),
-                              SizedBox(height: 10),
-                              DropdownButtonFormField<String>(
-                                value: _selectedPriority,
-                                items: _priorities.map((String priority) {
-                                  return DropdownMenuItem<String>(
-                                    value: priority,
-                                    child: Text(priority.capitalize()),
-                                  );
-                                }).toList(),
-                                onChanged: (String? value) {
-                                  setState(() {
-                                    _selectedPriority = value!;
-                                  });
-                                },
-                                decoration: InputDecoration(
-                                  labelText: 'Select Priority',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(5.0),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(5.0),
-                                    borderSide: const BorderSide(
-                                      color: AppColor.blackColor,
-                                    ),
-                                  ),
-                                  filled: true,
-                                  fillColor: AppColor.secondColor,
-                                  labelStyle: GoogleFonts.inter(
-                                    color: AppColor.iconsColor,
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 10.0,
-                                    horizontal: 10.0,
-                                  ),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter a title';
+                                    }
+                                    return null;
+                                  },
                                 ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please select a priority';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              SizedBox(height: 10),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Category',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColor.blackColor,
+                                SizedBox(height: 10),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Priority',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: !isDarkMode
+                                            ? AppColor.blackColor
+                                            : AppColor.whiteColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 10),
+                                DropdownButtonFormField<String>(
+                                  value: _selectedPriority,
+                                  items: _priorities.map((String priority) {
+                                    return DropdownMenuItem<String>(
+                                      value: priority,
+                                      child: Text(priority.capitalize()),
+                                    );
+                                  }).toList(),
+                                  onChanged: (String? value) {
+                                    setState(() {
+                                      _selectedPriority = value!;
+                                    });
+                                  },
+                                  decoration: InputDecoration(
+                                    labelText: 'Select Priority',
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(5.0),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(5.0),
+                                      borderSide: const BorderSide(
+                                        color: AppColor.blackColor,
+                                      ),
+                                    ),
+                                    filled: true,
+                                    fillColor: AppColor.secondColor,
+                                    labelStyle: GoogleFonts.inter(
+                                      color: AppColor.iconsColor,
+                                    ),
+                                    contentPadding: const EdgeInsets.symmetric(
+                                      vertical: 10.0,
+                                      horizontal: 10.0,
                                     ),
                                   ),
-                                ],
-                              ),
-                              SizedBox(height: 10),
-                              state is CategoryLoadSuccess
-                                  ? DropdownButtonFormField<int>(
-                                      value: mission.category,
-                                      items: state.categories.map((category) {
-                                        return DropdownMenuItem<int>(
-                                          value: category.id,
-                                          child: Text(category.name),
-                                        );
-                                      }).toList(),
-                                      onChanged: (int? value) {
-                                        setState(() {
-                                          _categoryController.text =
-                                              value.toString();
-                                        });
-                                      },
-                                      decoration: InputDecoration(
-                                        labelText: 'Select Category',
-                                        border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(5.0),
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(5.0),
-                                          borderSide: const BorderSide(
-                                            color: AppColor.blackColor,
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please select a priority';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                SizedBox(height: 10),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Category',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: !isDarkMode
+                                            ? AppColor.blackColor
+                                            : AppColor.whiteColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 10),
+                                state is CategoryLoadSuccess
+                                    ? DropdownButtonFormField<int>(
+                                        value: mission.category,
+                                        items: state.categories.map((category) {
+                                          return DropdownMenuItem<int>(
+                                            value: category.id,
+                                            child: Text(category.name),
+                                          );
+                                        }).toList(),
+                                        onChanged: (int? value) {
+                                          setState(() {
+                                            _categoryController.text =
+                                                value.toString();
+                                          });
+                                        },
+                                        decoration: InputDecoration(
+                                          labelText: 'Select Category',
+                                          border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(5.0),
+                                          ),
+                                          focusedBorder: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(5.0),
+                                            borderSide: const BorderSide(
+                                              color: AppColor.blackColor,
+                                            ),
+                                          ),
+                                          filled: true,
+                                          fillColor: AppColor.secondColor,
+                                          labelStyle: GoogleFonts.inter(
+                                            color: AppColor.iconsColor,
+                                          ),
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                            vertical: 10.0,
+                                            horizontal: 10.0,
                                           ),
                                         ),
-                                        filled: true,
-                                        fillColor: AppColor.secondColor,
-                                        labelStyle: GoogleFonts.inter(
-                                          color: AppColor.iconsColor,
-                                        ),
-                                        contentPadding:
-                                            const EdgeInsets.symmetric(
-                                          vertical: 10.0,
-                                          horizontal: 10.0,
-                                        ),
-                                      ),
-                                      validator: (value) {
-                                        if (value == null) {
-                                          return 'Please select a category';
-                                        }
-                                        return null;
-                                      },
-                                    )
-                                  : CircularProgressIndicator(),
-                              SizedBox(height: 20),
-                              CustomElevatedButton(
-                                onPressed: () {
-                                  if (_formKey.currentState!.validate()) {
-                                    onSave(
-                                      _titleController.text,
-                                      _selectedPriority,
-                                      int.parse(_categoryController.text),
-                                    );
-                                    Navigator.pop(context);
-                                  }
-                                },
-                                text: 'Update Mission',
-                              ),
-                              SizedBox(height: 10),
-                            ],
+                                        validator: (value) {
+                                          if (value == null) {
+                                            return 'Please select a category';
+                                          }
+                                          return null;
+                                        },
+                                      )
+                                    : CircularProgressIndicator(),
+                                SizedBox(height: 20),
+                                CustomElevatedButton(
+                                  onPressed: () {
+                                    if (_formKey.currentState!.validate()) {
+                                      onSave(
+                                        _titleController.text,
+                                        _selectedPriority,
+                                        int.parse(_categoryController.text),
+                                      );
+                                      Navigator.pop(context);
+                                    }
+                                  },
+                                  text: 'Update Mission',
+                                ),
+                                SizedBox(height: 10),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 );
               },
             ),
@@ -1288,24 +1339,58 @@ class _MissionScreenState extends State<MissionScreen> {
     await showDialog(
       context: context,
       builder: (context) {
+        bool isDarkMode = Provider.of<ThemeProvider>(context).isDarkMode;
+
         return BlocProvider.value(
           value: categoryBloc,
           child: AlertDialog(
-            title: Text('Add New Category'),
+            backgroundColor:
+                isDarkMode ? AppColor.blackColor : AppColor.whiteColor,
+            title: Text(
+              'Add New Category',
+              style: GoogleFonts.inter(
+                color: !isDarkMode ? AppColor.blackColor : AppColor.whiteColor,
+              ),
+            ),
             content: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text('Category Name:'),
+                  Text(
+                    'Category Name:',
+                    style: GoogleFonts.inter(
+                      color: !isDarkMode
+                          ? AppColor.blackColor
+                          : AppColor.whiteColor,
+                    ),
+                  ),
                   TextFormField(
                     controller: categoryNameController,
+                    style: GoogleFonts.inter(
+                      color: !isDarkMode
+                          ? AppColor.blackColor
+                          : AppColor.whiteColor,
+                    ),
                     decoration: InputDecoration(
                       border: OutlineInputBorder(),
                       hintText: 'Enter category name',
+                      hintStyle: GoogleFonts.inter(
+                        color: !isDarkMode
+                            ? AppColor.blackColor
+                            : AppColor.whiteColor,
+                      ),
+                      errorStyle: GoogleFonts.inter(color: Colors.red),
                     ),
                   ),
                   SizedBox(height: 20),
-                  Text('Category Color:'),
+                  Text(
+                    'Category Color:',
+                    style: GoogleFonts.inter(
+                      color: !isDarkMode
+                          ? AppColor.blackColor
+                          : AppColor.whiteColor,
+                    ),
+                  ),
                   BlockPicker(
                     pickerColor: selectedColor,
                     onColorChanged: (Color color) {
@@ -1320,7 +1405,12 @@ class _MissionScreenState extends State<MissionScreen> {
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                child: Text('Cancel'),
+                child: Text(
+                  'Cancel',
+                  style: GoogleFonts.inter(
+                    color: AppColor.redColor,
+                  ),
+                ),
               ),
               TextButton(
                 onPressed: () async {
@@ -1328,7 +1418,14 @@ class _MissionScreenState extends State<MissionScreen> {
                   if (categoryNameController.text.isEmpty) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('Please enter category name'),
+                        content: Text(
+                          'Please enter category name',
+                          style: GoogleFonts.inter(
+                            color: !isDarkMode
+                                ? AppColor.blackColor
+                                : AppColor.whiteColor,
+                          ),
+                        ),
                       ),
                     );
                     return;
@@ -1355,7 +1452,10 @@ class _MissionScreenState extends State<MissionScreen> {
                   // Close dialog
                   Navigator.of(context).pop();
                 },
-                child: Text('Add Category'),
+                child: Text('Add Category',
+                    style: GoogleFonts.inter(
+                      color: AppColor.greenColor,
+                    )),
               ),
             ],
           ),

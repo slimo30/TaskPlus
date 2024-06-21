@@ -29,3 +29,9 @@ class MemberError extends MemberState {
   @override
   List<Object> get props => [message];
 }
+
+class MemberLoadedSingle extends MemberState {
+  final Member member;
+
+  MemberLoadedSingle(this.member);
+}

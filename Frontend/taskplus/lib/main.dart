@@ -1,5 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:taskplus/Controller/themeProvider.dart';
 import 'package:taskplus/ui/Screens/MissionDetailsScreen.dart';
 import 'package:taskplus/utils/colors.dart';
 import 'package:taskplus/Controller/Authentification.dart';
@@ -15,13 +17,18 @@ import 'package:taskplus/firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // await removeAllInfoFromPrefs();
+  await removeAllInfoFromPrefs();
   String? token = await getTokenFromPrefs();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(MyApp(token: token));
 
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ThemeProvider(),
+      child: MyApp(token: token),
+    ),
+  );
   // Create a workspace
   // print('\nCreating workspace...');
   // try {
@@ -45,6 +52,9 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: AppColor.greenColor),
         useMaterial3: true,
       ),
+      themeMode: Provider.of<ThemeProvider>(context).isDarkMode
+          ? ThemeMode.dark
+          : ThemeMode.light,
       home: token == null ? LoginScreen() : MyHomePage(),
 
       //  MyHomePage(),

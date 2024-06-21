@@ -39,4 +39,20 @@ class MemberRepository {
       throw Exception('Failed to update member');
     }
   }
+
+  Future<Member> getMember(int memberId) async {
+    final url = Uri.parse('$baseUrl/members/$memberId/');
+    final response = await http.get(
+      url,
+      headers: await getHeaders(),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to get member');
+    }
+
+    final memberData = json.decode(response.body);
+    return Member.fromJson(
+        memberData); 
+  }
 }

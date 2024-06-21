@@ -18,3 +18,9 @@ class UpdateMember extends MemberEvent {
   @override
   List<Object> get props => [member];
 }
+
+class FetchMember extends MemberEvent {
+  final int memberId;
+
+  FetchMember(this.memberId);
+}
