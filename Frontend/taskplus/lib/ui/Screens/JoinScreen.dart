@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:taskplus/Controller/themeProvider.dart';
 import 'package:taskplus/utils/colors.dart';
 import 'package:taskplus/Controller/JoinWorkspace.dart';
 import 'package:taskplus/ui/Screens/HomePgaeScreen.dart';
@@ -33,15 +35,18 @@ class _JoinScreenContainerState extends State<JoinScreenContainer> {
 
   @override
   Widget build(BuildContext context) {
+    bool isDarkMode = Provider.of<ThemeProvider>(context).isDarkMode;
+
     return Container(
       child: Column(
         children: [
           const SizedBox(height: 10),
           Text("Enter the workspace code found in your email",
               style: GoogleFonts.inter(
-                fontSize: 15,
-                fontWeight: FontWeight.normal,
-              )),
+                  fontSize: 15,
+                  fontWeight: FontWeight.normal,
+                  color:
+                      !isDarkMode ? AppColor.blackColor : AppColor.whiteColor)),
           const SizedBox(height: 20),
           Container(
             width: MediaQuery.of(context).size.width * 0.8,
@@ -130,17 +135,19 @@ class _JoinScreenContainerState extends State<JoinScreenContainer> {
                       title: Text(
                         "Error",
                         style: GoogleFonts.inter(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: !isDarkMode
+                                ? AppColor.blackColor
+                                : AppColor.whiteColor),
                       ),
                       content: Text(
                           "Failed to join workspace. Status code: $statusCode",
                           style: GoogleFonts.inter(
-                            fontSize: 16,
-                            color: Colors.black,
-                          )),
+                              fontSize: 16,
+                              color: !isDarkMode
+                                  ? AppColor.blackColor
+                                  : AppColor.whiteColor)),
                       actions: <Widget>[
                         TextButton(
                           child: Text("OK",
@@ -157,7 +164,9 @@ class _JoinScreenContainerState extends State<JoinScreenContainer> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      backgroundColor: Colors.white,
+                      backgroundColor: isDarkMode
+                          ? AppColor.blackColor
+                          : AppColor.whiteColor,
                       elevation: 10,
                     );
                   },
@@ -170,16 +179,17 @@ class _JoinScreenContainerState extends State<JoinScreenContainer> {
           Text(
             "Or",
             style: GoogleFonts.inter(
-              fontSize: 50,
-              fontWeight: FontWeight.w900,
-            ),
+                fontSize: 50,
+                fontWeight: FontWeight.w900,
+                color: !isDarkMode ? AppColor.blackColor : AppColor.whiteColor),
           ),
           const SizedBox(height: 10),
           Text("Enter the workspace code found in your email",
               style: GoogleFonts.inter(
-                fontSize: 15,
-                fontWeight: FontWeight.normal,
-              )),
+                  fontSize: 15,
+                  fontWeight: FontWeight.normal,
+                  color:
+                      !isDarkMode ? AppColor.blackColor : AppColor.whiteColor)),
           const Image(
             image: AssetImage('assets/images/scan.png'),
           ),

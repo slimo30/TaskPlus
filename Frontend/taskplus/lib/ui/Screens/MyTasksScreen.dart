@@ -745,7 +745,7 @@ class _MyTasksPageState extends State<MyTasksPage> {
                 style: GoogleFonts.inter(
                     fontSize: 16,
                     color:
-                        !isDarkMode ? AppColor.blackColor : AppColor.whiteColor,
+                        !isDarkMode ? AppColor.blackColor : AppColor.greenColor,
                     fontWeight: FontWeight.bold),
               ),
             );

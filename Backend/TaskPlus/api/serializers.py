@@ -33,6 +33,9 @@ class MemberSerializer(serializers.ModelSerializer):
         fields = ['id', 'workspace', 'device_token', 'username', 'superuser', 'name']
 
 
+class PasswordChangeSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
 
 class WorkspaceSerializer1(serializers.ModelSerializer):
     class Meta:

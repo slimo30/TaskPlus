@@ -85,6 +85,38 @@ def login(request):
     return Response({"detail": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(["POST"])
+def change_password(request, member_id):
+    try:
+        member = Member.objects.get(id=member_id)
+    except Member.DoesNotExist:
+        return Response({"detail": "Member not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    # Ensure that the authenticated user is the owner of the member record or a superuser
+   
+    serializer = PasswordChangeSerializer(data=request.data)
+    if serializer.is_valid():
+        old_password = serializer.validated_data['old_password']
+        new_password = serializer.validated_data['new_password']
+
+        user = User.objects.get(username=member.username)
+        
+        if not user.check_password(old_password):
+            return Response({"detail": "Old password is incorrect."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Update password in User model
+        user.set_password(new_password)
+        user.save()
+
+        # Update password in Member model
+        member.password = new_password
+        member.save()
+
+        return Response({"detail": "Password changed successfully."}, status=status.HTTP_200_OK)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 class MemberRetrieveUpdateView(generics.RetrieveUpdateAPIView):
     queryset = Member.objects.all()
@@ -219,12 +251,12 @@ class CommentRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
-class CommentListViewByWorkspace(generics.ListAPIView):
+class CommentListViewByTask(generics.ListAPIView):
     serializer_class = CommentSerializer
 
     def get_queryset(self):
-        workspace_id = self.kwargs['workspace_id']
-        return Comment.objects.filter(workspace__id=workspace_id).order_by('time_posted')
+        task_id = self.kwargs['task_id']
+        return Comment.objects.filter(task_id=task_id).order_by('time_posted')
 
 class CategoryListCreateView(generics.ListCreateAPIView):
     queryset = Category.objects.all()
@@ -256,7 +288,7 @@ class JoinWorkspaceAPIView(APIView):
             member.save()
 
             # Send notification to all workspace members
-            self.send_notification_to_workspace_members(workspace, f'Member {member.username} joined Workspace {workspace.name}.')
+            # self.send_notification_to_workspace_members(workspace, f'Member {member.username} joined Workspace {workspace.name}.')
 
             return Response({'detail': f'Member {member.username} joined Workspace {workspace.name}.'}, status=status.HTTP_200_OK)
         except Member.DoesNotExist:
@@ -385,3 +417,34 @@ class CompleteTaskView(APIView):
         serializer = TaskSerializer(task)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+
+
+
+class CreateWorkspaceView(APIView):
+    def post(self, request):
+        serializer = WorkspaceSerializer(data=request.data)
+        if serializer.is_valid():
+            workspace = serializer.save()
+            member_id = request.data.get('member_id')
+            try:
+                member = Member.objects.get(id=member_id)
+                member.workspace = workspace
+                member.superuser = True
+                member.save()
+            except Member.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+            
+            return Response(status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+
+@api_view(['GET'])
+def get_invite_code(request, workspace_id):
+    workspace = get_object_or_404(Workspace, id=workspace_id)
+    return Response({'invite_code': workspace.invite_code}, status=status.HTTP_200_OK)

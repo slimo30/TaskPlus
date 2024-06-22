@@ -97,8 +97,7 @@ class Comment(models.Model):
     text = models.TextField()
     employee = models.ForeignKey(Member, on_delete=models.CASCADE)
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='comments')
-    time_posted = models.DateTimeField(auto_now_add=True)
-    workspace = models.ForeignKey(Workspace, on_delete=models.CASCADE, related_name='comment_workspace', default=1)
+    time_posted = models.DateTimeField()
 
     def __str__(self):
         return f"Comment by {self.employee.full_name} on {self.task.title}"

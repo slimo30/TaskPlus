@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:taskplus/Controller/Authentification.dart';
+import 'package:taskplus/Controller/MmberServices.dart';
+import 'package:taskplus/Model/Member.dart';
 import 'package:taskplus/ui/Screens/HistoryScreen.dart';
 import 'package:taskplus/ui/Screens/InviteScreen.dart';
 import 'package:taskplus/ui/Screens/MissionsScreen.dart';
 import 'package:taskplus/ui/Screens/MyTasksScreen.dart';
 import 'package:taskplus/utils/colors.dart';
+import 'package:taskplus/utils/link.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key}) : super(key: key);
@@ -14,6 +18,28 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  @override
+  void initState() {
+    super.initState();
+    loadMemberAndWorkspaceData();
+  }
+
+  void loadMemberAndWorkspaceData() async {
+    try {
+      int memberId = await getMemberIdFromPrefs();
+      MemberService memberService = MemberService(baseUrl: baseurl);
+      Member memberModel = await memberService.getMember(memberId);
+
+      setState(() {
+        superUser = memberModel.superuser;
+      });
+    } catch (e) {
+      print('Error in initState: $e');
+    }
+  }
+
+  bool superUser = true;
+
   int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
@@ -42,7 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   _buildNavItem(Icons.assignment, 'Missions', 0),
                   _buildNavItem(Icons.assignment_turned_in, 'My tasks', 1),
                   _buildNavItem(Icons.history, 'History', 2),
-                  _buildNavItem(Icons.person_add, 'Invite', 3),
+                  if (superUser) _buildNavItem(Icons.person_add, 'Invite', 3),
                 ],
               ),
             ),

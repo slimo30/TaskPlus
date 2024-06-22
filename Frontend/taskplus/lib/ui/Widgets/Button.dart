@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:taskplus/utils/TextStyle.dart';
 import 'package:taskplus/utils/colors.dart';
 
@@ -25,7 +26,11 @@ class CustomElevatedButton extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: RegularWhite15,
+        style: GoogleFonts.inter(
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
+          color: AppColor.whiteColor,
+        ),
       ),
     );
   }
@@ -55,7 +60,12 @@ class CustomIconElevatedButton extends StatelessWidget {
         minimumSize: const Size(150, 40),
       ),
       icon: Icon(icon, color: Colors.white), // Always provide an icon
-      label: Text(text, style: RegularWhite15), // Always provide text
+      label: Text(text,
+          style: GoogleFonts.inter(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: AppColor.whiteColor,
+          )), // Always provide text
     );
   }
 }

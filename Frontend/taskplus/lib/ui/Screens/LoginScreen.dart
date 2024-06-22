@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:taskplus/Controller/themeProvider.dart';
 import 'package:taskplus/utils/TextStyle.dart';
 import 'package:taskplus/utils/colors.dart';
 import 'package:taskplus/utils/link.dart';
@@ -52,8 +54,11 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passwordController = TextEditingController();
   @override
   Widget build(BuildContext context) {
+    bool isDarkMode = Provider.of<ThemeProvider>(context).isDarkMode;
+
     return Scaffold(
-      backgroundColor: AppColor.backgroundColor,
+      backgroundColor:
+          isDarkMode ? AppColor.blackColor : AppColor.backgroundColor,
       body: SingleChildScrollView(
         child: SizedBox(
           width: double.infinity,
@@ -67,28 +72,44 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(
                   height: 30,
                 ),
-                const Image(
-                  image: AssetImage('assets/images/Get Started.png'),
+                Image(
+                  image: AssetImage(!isDarkMode
+                      ? 'assets/images/Get Started.png'
+                      : 'assets/images/Get Started2.png'),
                 ),
                 const SizedBox(
                   height: 20,
                 ),
                 Text(
                   "Welcome back! Dive into productivity with our checklist app. Log in for easy task management. Your checklist journey begins now!",
-                  style: Regular15,
+                  style: GoogleFonts.inter(
+                    fontSize: 15,
+                    fontWeight: FontWeight.normal,
+                    color:
+                        !isDarkMode ? AppColor.blackColor : AppColor.whiteColor,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 10),
                 Container(
                   width: MediaQuery.of(context).size.width,
-                  color: AppColor.whiteColor,
+                  color: !isDarkMode
+                      ? AppColor.whiteColor
+                      : AppColor.darkModeBackgroundColor,
                   child: Column(
                     children: [
                       Padding(
                         padding: const EdgeInsets.all(20.0),
                         child: Column(
                           children: [
-                            Text("Login", style: semiBold18),
+                            Text("Login",
+                                style: GoogleFonts.inter(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: !isDarkMode
+                                      ? AppColor.blackColor
+                                      : AppColor.whiteColor,
+                                )),
                             const SizedBox(
                               height: 20,
                             ),
@@ -225,7 +246,13 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: Text.rich(
                                 TextSpan(
                                   text: "Don't have an account? ",
-                                  style: Regular15,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.normal,
+                                    color: !isDarkMode
+                                        ? AppColor.blackColor
+                                        : AppColor.whiteColor,
+                                  ),
                                   children: [
                                     TextSpan(
                                       text: "Sign up!",

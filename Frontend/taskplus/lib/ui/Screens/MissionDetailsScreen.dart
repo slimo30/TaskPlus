@@ -34,10 +34,12 @@ import 'package:http/http.dart' as http;
 class MissionDetailsScreen extends StatelessWidget {
   final Mission mission;
   final Category category;
+  final bool superuser;
 
   MissionDetailsScreen({
     required this.mission,
     required this.category,
+    required this.superuser,
   });
 
   @override
@@ -72,6 +74,7 @@ class MissionDetailsScreen extends StatelessWidget {
         child: MissionDetailsPage(
           mission: mission,
           category: category,
+          superuser: superuser,
         ),
       ),
     );
@@ -81,8 +84,12 @@ class MissionDetailsScreen extends StatelessWidget {
 class MissionDetailsPage extends StatefulWidget {
   final Mission mission;
   final Category category;
+  final bool superuser;
   const MissionDetailsPage(
-      {super.key, required this.mission, required this.category});
+      {super.key,
+      required this.mission,
+      required this.category,
+      required this.superuser});
 
   @override
   State<MissionDetailsPage> createState() => _MissionDetailsPageState();
@@ -270,72 +277,74 @@ class _MissionDetailsPageState extends State<MissionDetailsPage> {
               SizedBox(
                 height: 10,
               ),
-              Container(
-                width: double.infinity,
-                child: InkWell(
-                  onTap: () async {
-                    int owner = await getMemberIdFromPrefs();
-                    final taskBloc = BlocProvider.of<TaskBloc>(context);
-                    showTaskFormBottomSheet(
-                      context: context,
-                      onSave: (title, description, priority, deadline,
-                          timeToAlert) {
-                        context.read<TaskBloc>().add(CreateTask(
-                            Task(
-                                taskId: 0,
-                                title: title,
-                                description: description,
-                                priority: priority,
-                                state: 'incomplete',
-                                deadline: deadline,
-                                timeCreated: DateTime.now(),
-                                orderPosition: 0,
-                                timeToAlert: timeToAlert,
-                                notificationSent: false,
-                                notificationSentAlert: false,
-                                taskOwner: owner,
-                                mission: widget.mission.id),
-                            missionId: widget.mission.id));
-                      },
-                      taskBloc: taskBloc,
-                    );
-                  },
-                  borderRadius: BorderRadius.circular(5),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(5),
-                      color: AppColor.greenColor,
-                    ),
-                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Add Task",
-                          style: GoogleFonts.inter(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: AppColor.whiteColor,
+              if (widget.superuser)
+                Container(
+                  width: double.infinity,
+                  child: InkWell(
+                    onTap: () async {
+                      int owner = await getMemberIdFromPrefs();
+                      final taskBloc = BlocProvider.of<TaskBloc>(context);
+                      showTaskFormBottomSheet(
+                        context: context,
+                        onSave: (title, description, priority, deadline,
+                            timeToAlert) {
+                          context.read<TaskBloc>().add(CreateTask(
+                              Task(
+                                  taskId: 0,
+                                  title: title,
+                                  description: description,
+                                  priority: priority,
+                                  state: 'incomplete',
+                                  deadline: deadline,
+                                  timeCreated: DateTime.now(),
+                                  orderPosition: 0,
+                                  timeToAlert: timeToAlert,
+                                  notificationSent: false,
+                                  notificationSentAlert: false,
+                                  taskOwner: owner,
+                                  mission: widget.mission.id),
+                              missionId: widget.mission.id));
+                        },
+                        taskBloc: taskBloc,
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(5),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(5),
+                        color: AppColor.greenColor,
+                      ),
+                      padding:
+                          EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Add Task",
+                            style: GoogleFonts.inter(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: AppColor.whiteColor,
+                            ),
                           ),
-                        ),
-                        SizedBox(width: 10), // Space between text and icon
-                        Container(
-                          width: 30,
-                          height: 30,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white,
+                          SizedBox(width: 10), // Space between text and icon
+                          Container(
+                            width: 30,
+                            height: 30,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                            ),
+                            child: Icon(
+                              Icons.add,
+                              color: AppColor.greenColor,
+                            ),
                           ),
-                          child: Icon(
-                            Icons.add,
-                            color: AppColor.greenColor,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
               SizedBox(
                 height: 10,
               ),
@@ -670,46 +679,48 @@ class _MissionDetailsPageState extends State<MissionDetailsPage> {
                             ),
                           ),
                         ),
-                  GestureDetector(
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppColor.darkGreenColor,
-                        borderRadius: BorderRadius.circular(5),
-                      ),
-                      child: Row(
-                        children: [
-                          Text(
-                            "Assign",
-                            style: GoogleFonts.inter(
-                              color: AppColor.whiteColor,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
+                  if (widget.superuser)
+                    GestureDetector(
+                      child: Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColor.darkGreenColor,
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Row(
+                          children: [
+                            Text(
+                              "Assign",
+                              style: GoogleFonts.inter(
+                                color: AppColor.whiteColor,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                          SizedBox(width: 8), // Added a SizedBox for spacing
-                          SizedBox(
-                            width:
-                                12, // Adjust the width based on your text font size
-                            height:
-                                12, // Adjust the height to match the icon size
-                            child: Icon(
-                              Icons.assignment_turned_in,
-                              color: AppColor.whiteColor,
-                              size:
-                                  12, // Set the icon size to match the text font size
+                            SizedBox(width: 8), // Added a SizedBox for spacing
+                            SizedBox(
+                              width:
+                                  12, // Adjust the width based on your text font size
+                              height:
+                                  12, // Adjust the height to match the icon size
+                              child: Icon(
+                                Icons.assignment_turned_in,
+                                color: AppColor.whiteColor,
+                                size:
+                                    12, // Set the icon size to match the text font size
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
+                      onTap: () {
+                        final taskBloc = BlocProvider.of<TaskBloc>(context);
+                        final memberBloc = BlocProvider.of<MemberBloc>(context);
+                        _showMemberSelectionBottomSheet(
+                            context, memberBloc, taskBloc, task);
+                      },
                     ),
-                    onTap: () {
-                      final taskBloc = BlocProvider.of<TaskBloc>(context);
-                      final memberBloc = BlocProvider.of<MemberBloc>(context);
-                      _showMemberSelectionBottomSheet(
-                          context, memberBloc, taskBloc, task);
-                    },
-                  ),
                   GestureDetector(
                     onTap: () {
                       Navigator.push(
@@ -758,71 +769,73 @@ class _MissionDetailsPageState extends State<MissionDetailsPage> {
               ),
               Row(
                 children: [
-                  GestureDetector(
-                    onTap: () {
-                      final taskBloc = BlocProvider.of<TaskBloc>(context);
-                      _showDeleteConfirmationDialog(
-                          context, task.taskId, widget.mission.id, taskBloc);
-                    },
-                    child: Icon(
-                      Icons.delete,
-                      color: AppColor.redColor,
+                  if (widget.superuser)
+                    GestureDetector(
+                      onTap: () {
+                        final taskBloc = BlocProvider.of<TaskBloc>(context);
+                        _showDeleteConfirmationDialog(
+                            context, task.taskId, widget.mission.id, taskBloc);
+                      },
+                      child: Icon(
+                        Icons.delete,
+                        color: AppColor.redColor,
+                      ),
                     ),
-                  ),
                   SizedBox(width: 16),
-                  GestureDetector(
-                    onTap: () async {
-                      int owner = await getMemberIdFromPrefs();
-                      final taskBloc = BlocProvider.of<TaskBloc>(context);
-                      bool deadline_changed = false;
-                      bool duration_changed = false;
-                      showTaskUpdateFormBottomSheet(
-                        context: context,
-                        onSave: (title, description, priority, deadline,
-                            timeToAlert, deadline_changed, duration_changed) {
-                          print("$deadline_changed $duration_changed");
-                          taskBloc.add(
-                            UpdateTask(
-                              Task(
-                                taskId: task
-                                    .taskId, // Assuming taskId is required for update
-                                title: title,
-                                description: description,
-                                priority: priority,
-                                state: task.state, // Adjust state as needed
-                                deadline: deadline,
-                                timeCreated: task
-                                    .timeCreated, // Keep the original timeCreated
-                                orderPosition: task
-                                    .orderPosition, // Keep the original orderPosition
-                                timeToAlert: timeToAlert,
-                                notificationSent: deadline_changed
-                                    ? false
-                                    : task
-                                        .notificationSent, // Keep the original notificationSent
-                                notificationSentAlert: deadline_changed
-                                    ? false
-                                    : duration_changed
-                                        ? false
-                                        : task
-                                            .notificationSentAlert, // Keep the original notificationSentAlert
-                                taskOwner: owner,
-                                mission: widget.mission
-                                    .id, // Assuming you have access to widget.mission.id
+                  if (widget.superuser)
+                    GestureDetector(
+                      onTap: () async {
+                        int owner = await getMemberIdFromPrefs();
+                        final taskBloc = BlocProvider.of<TaskBloc>(context);
+                        bool deadline_changed = false;
+                        bool duration_changed = false;
+                        showTaskUpdateFormBottomSheet(
+                          context: context,
+                          onSave: (title, description, priority, deadline,
+                              timeToAlert, deadline_changed, duration_changed) {
+                            print("$deadline_changed $duration_changed");
+                            taskBloc.add(
+                              UpdateTask(
+                                Task(
+                                  taskId: task
+                                      .taskId, // Assuming taskId is required for update
+                                  title: title,
+                                  description: description,
+                                  priority: priority,
+                                  state: task.state, // Adjust state as needed
+                                  deadline: deadline,
+                                  timeCreated: task
+                                      .timeCreated, // Keep the original timeCreated
+                                  orderPosition: task
+                                      .orderPosition, // Keep the original orderPosition
+                                  timeToAlert: timeToAlert,
+                                  notificationSent: deadline_changed
+                                      ? false
+                                      : task
+                                          .notificationSent, // Keep the original notificationSent
+                                  notificationSentAlert: deadline_changed
+                                      ? false
+                                      : duration_changed
+                                          ? false
+                                          : task
+                                              .notificationSentAlert, // Keep the original notificationSentAlert
+                                  taskOwner: owner,
+                                  mission: widget.mission
+                                      .id, // Assuming you have access to widget.mission.id
+                                ),
+                                missionId: widget.mission.id,
                               ),
-                              missionId: widget.mission.id,
-                            ),
-                          );
-                        },
-                        taskBloc: taskBloc,
-                        task: task,
-                      );
-                    },
-                    child: Icon(
-                      Icons.edit,
-                      color: AppColor.orangeColor,
+                            );
+                          },
+                          taskBloc: taskBloc,
+                          task: task,
+                        );
+                      },
+                      child: Icon(
+                        Icons.edit,
+                        color: AppColor.orangeColor,
+                      ),
                     ),
-                  ),
                   Expanded(
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,

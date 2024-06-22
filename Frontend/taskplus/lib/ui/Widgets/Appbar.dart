@@ -72,6 +72,7 @@ AppBar customAppBarWithoutLeadingWithActions(String titleText,
       ),
     ),
     centerTitle: true,
+    automaticallyImplyLeading: false, // This line removes the leading arrow
     actions: [
       IconButton(
         onPressed: onSettingsPressed,
