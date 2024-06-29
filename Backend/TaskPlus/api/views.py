@@ -352,68 +352,6 @@ class WorkspaceHistoryAPIView(APIView):
 
 
 
-import firebase_admin
-from firebase_admin import messaging
-import json
-import requests
-import google.auth.transport.requests
-from google.oauth2 import service_account
-
-SCOPES = ['https://www.googleapis.com/auth/firebase.messaging']
-
-# Service account details
-
-
-SERVICE_ACCOUNT_INFO = {
-
-}
-
-
- 
-
-def _get_access_token():
-    """Retrieve a valid access token that can be used to authorize requests.
-    
-    :return: Access token.
-    """
-    credentials = service_account.Credentials.from_service_account_info(
-        SERVICE_ACCOUNT_INFO, scopes=SCOPES)
-    request = google.auth.transport.requests.Request()
-    credentials.refresh(request)
-    return credentials.token
-
-def send_notification(device_token, title, body):
-    """Send a notification to a specified device.
-    
-    :param device_token: The FCM device token to send the notification to.
-    :param title: The title of the notification.
-    :param body: The body of the notification.
-    """
-    if device_token is not None and device_token != "":
-        access_token = _get_access_token()
-        headers = {
-            'Authorization': 'Bearer ' + access_token,
-            'Content-Type': 'application/json',
-        }
-        message = {
-            "message": {
-                "token": device_token,
-                "notification": {
-                    "title": title,
-                    "body": body
-                }
-            }
-        }
-        response = requests.post(
-            'https://fcm.googleapis.com/v1/projects/taskplus-1ccf9/messages:send',
-            headers=headers,
-            data=json.dumps(message)
-        )
-        print(response.status_code)
-        print(response.json())
-
-
-
 
 
 
