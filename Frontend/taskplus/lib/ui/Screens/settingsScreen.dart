@@ -12,6 +12,7 @@ import 'package:taskplus/Bloc/member/member_bloc.dart';
 import 'package:taskplus/Bloc/member/member_event.dart';
 import 'package:taskplus/Bloc/member/member_state.dart';
 import 'package:taskplus/Controller/Authentification.dart';
+import 'package:taskplus/Controller/MmberServices.dart';
 import 'package:taskplus/Controller/member_repo.dart';
 import 'package:taskplus/Controller/themeProvider.dart';
 import 'package:taskplus/Model/Member.dart';
@@ -269,7 +270,25 @@ class SettingsPage extends StatelessWidget {
                                   },
                                   child: GestureDetector(
                                     onTap: () async {
+                                      int id = await getMemberIdFromPrefs();
+                                      MemberService memberService =
+                                          MemberService(baseUrl: baseurl);
+                                      Member member =
+                                          await memberService.getMember(id);
+                                      Member newmember = Member(
+                                        id: member.id,
+                                        // password: member.password,
+                                        username: member.username,
+                                        superuser: member.superuser,
+                                        name: member.name,
+                                        deviceToken: '',
+                                        workspace: member.workspace,
+                                      );
+
+                                      await memberService
+                                          .updateMember(newmember);
                                       await removeAllInfoFromPrefs();
+
                                       Navigator.push(
                                           context,
                                           MaterialPageRoute(

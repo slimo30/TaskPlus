@@ -26,7 +26,7 @@ void main() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
 
   bool isDarkMode = prefs.getBool(themeKey) ?? false;
- await FirebaseApi().initNotifications();
+  await FirebaseApi().initNotifications();
 
   runApp(
     ChangeNotifierProvider(
@@ -34,7 +34,6 @@ void main() async {
       child: MyApp(token: token),
     ),
   );
-
 }
 
 class MyApp extends StatelessWidget {
