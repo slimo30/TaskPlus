@@ -325,30 +325,6 @@ class WorkspaceHistoryAPIView(APIView):
 
 
 
-# def send_notification(device_token, title, body, subtitle=None):
-#     try:
-#         # Your notification sending logic here
-#         # Example: Send an HTTP request to FCM
-#         fcm_url = 'https://fcm.googleapis.com/fcm/send'
-#         headers = {
-#             'Content-Type': 'application/json',
-#             'Authorization': 'key=AAAA2XJqoZU:APA91bEN0c0-qzOuaezMX6_hlFPI7j_lGumkHEU8NlQAFF2I9L2m-bhQROssaAktc_2PtOzJ3X0HtFO-DhgS-6OcE17QVJ6ERJ513Dq8yPr2_8E5vf8yKOkFUL5suLn6BLBrWQjfs_x3',  # Replace with your FCM server key
-#         }
-
-#         payload = {
-#             'to': device_token,
-#             'notification': {
-#                 'title': title,
-#                 'body': body,
-#                 'subtitle': subtitle,
-#             }
-#         }
-
-#         response = requests.post(fcm_url, json=payload, headers=headers)
-#         print('Sent')
-#         return response.status_code
-#     except Exception as e:
-#         print(f"An error occurred during notification sending: {e}")
 
 
 
