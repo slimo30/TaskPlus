@@ -16,17 +16,25 @@ urlpatterns = [
     path('workspaces/', views.WorkspaceListView.as_view(), name='workspace-list'),
     path('workspaces/<int:pk>/', views.WorkspaceRetrieveView.as_view(), name='workspace-retrieve'),
     path('workspaces/create/<int:member_id>/', views.WorkspaceCreateView.as_view(), name='create_workspace'),
+    path('create_workspace/', views.CreateWorkspaceView.as_view(), name='create_workspace'),
+
     
     path('workspaces/<int:workspace_id>/missions/', views.WorkspaceMissionListView.as_view(), name='workspace-missions'),
+    path('get-invite-code/<int:workspace_id>/', views.get_invite_code, name='get_invite_code'),
+
     #add meisson by workspace
     path('missions/', views.MissionListView.as_view(), name='mission-list'),
     path('missions/<int:pk>/', views.MissionDetailView.as_view(), name='mission-detail'),
     path('workspace/<int:workspace_id>/missions/', views.MissionListViewByWorkspace.as_view(), name='mission-list-by-workspace'),
+    path('change-password/<int:member_id>/', views.change_password, name='change-password'),
+
 
     #add fix this tasks by mession
     path('tasks/', views.TaskViewSet.as_view({'get': 'list', 'post': 'create'}), name='task-list'),
     path('task/<int:task_id>/complete/', views.CompleteTaskView.as_view(), name='api_complete_task'),
     path('tasks/member/history/<int:member_id>/', views.TaskListViewByMemberHistory.as_view(), name='tasks-by-member-history'),
+    path('assign-task/<int:member_id>/', views.AssignTaskView.as_view(), name='assign-task'),
+
 
 
     path('tasks/<int:pk>/', views.TaskViewSet.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'destroy'}), name='task-detail'),
@@ -36,7 +44,7 @@ urlpatterns = [
 
     path('comments/', views.CommentListCreateView.as_view(), name='comment-list-create'),
     path('comments/<int:pk>/', views.CommentRetrieveUpdateDestroyView.as_view(), name='comment-retrieve-update-destroy'),
-    path('comments/workspace/<int:workspace_id>/', views.CommentListViewByWorkspace.as_view(), name='comments-by-workspace'),
+    path('comments/task/<int:task_id>/', views.CommentListViewByTask.as_view(), name='comments-by-task'),
 
 
     path('categories/workspace/<int:workspace_id>/', views.CategoryListCreateViewByWorkspace.as_view(), name='category-list-create-by-workspace'),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:taskplus/Controller/themeProvider.dart';
 import 'package:taskplus/utils/TextStyle.dart';
 import 'package:taskplus/utils/colors.dart';
 import 'package:taskplus/ui/Screens/CreateWoekspaceScreeen.dart';
@@ -38,13 +40,15 @@ class _ToggleLabelContainerState extends State<ToggleLabelContainer> {
 
   @override
   Widget build(BuildContext context) {
+    bool isDarkMode = Provider.of<ThemeProvider>(context).isDarkMode;
+
     return Column(
       children: [
         Container(
           width: MediaQuery.of(context).size.width * 0.8,
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: AppColor.blackColor,
+            color: !isDarkMode ? AppColor.blackColor : AppColor.whiteColor,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Row(
@@ -63,7 +67,9 @@ class _ToggleLabelContainerState extends State<ToggleLabelContainer> {
                       decoration: BoxDecoration(
                         color: _selectedIndex == 0
                             ? AppColor.greenColor
-                            : Colors.transparent,
+                            : isDarkMode
+                                ? AppColor.iconsColor.withOpacity(0.7)
+                                : Colors.transparent,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
@@ -72,9 +78,7 @@ class _ToggleLabelContainerState extends State<ToggleLabelContainer> {
                         style: GoogleFonts.inter(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: _selectedIndex == 0
-                              ? Colors.white
-                              : AppColor.whiteColor,
+                          color: AppColor.whiteColor,
                         ),
                       ),
                     ),
@@ -95,7 +99,9 @@ class _ToggleLabelContainerState extends State<ToggleLabelContainer> {
                       decoration: BoxDecoration(
                         color: _selectedIndex == 1
                             ? AppColor.greenColor
-                            : Colors.transparent,
+                            : isDarkMode
+                                ? AppColor.iconsColor.withOpacity(0.7)
+                                : Colors.transparent,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
@@ -104,9 +110,7 @@ class _ToggleLabelContainerState extends State<ToggleLabelContainer> {
                         style: GoogleFonts.inter(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: _selectedIndex == 1
-                              ? Colors.white
-                              : AppColor.whiteColor,
+                          color: AppColor.whiteColor,
                         ),
                       ),
                     ),

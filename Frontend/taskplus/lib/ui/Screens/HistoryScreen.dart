@@ -144,7 +144,9 @@ class MyTasksPage extends StatelessWidget {
                                     style: GoogleFonts.inter(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.black,
+                                      color: !isDarkMode
+                                          ? AppColor.blackColor
+                                          : AppColor.whiteColor,
                                     ),
                                   ),
                                   ListView.builder(
@@ -639,16 +641,30 @@ class MyTasksPage extends StatelessWidget {
 
   Map<String, List<Task>> categorizeTasksByDeadline(List<Task> tasks) {
     final today = DateTime.now();
-    final Map<String, List<Task>> categorizedTasks = {};
+    final Map<String, List<Task>> categorizedTasks = {
+      'Today': [],
+      'Yesterday': [],
+      'X Days Ago': [],
+      'Earlier': []
+    };
 
     for (var task in tasks) {
       final difference = today.difference(task.deadline).inDays;
       final category = getCategoryName(difference);
-      if (!categorizedTasks.containsKey(category)) {
-        categorizedTasks[category] = [];
+
+      // Check if the category is 'Today' and insert at the beginning
+      if (category == 'Today') {
+        categorizedTasks[category]!.insert(0, task);
+      } else {
+        if (!categorizedTasks.containsKey(category)) {
+          categorizedTasks[category] = [];
+        }
+        categorizedTasks[category]!.add(task);
       }
-      categorizedTasks[category]!.add(task);
     }
+
+    // Remove empty lists to avoid unnecessary entries
+    categorizedTasks.removeWhere((key, value) => value.isEmpty);
 
     return categorizedTasks;
   }

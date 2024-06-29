@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:taskplus/Controller/themeProvider.dart';
 
 import 'package:taskplus/utils/colors.dart';
 import 'package:taskplus/Controller/JoinWorkspace.dart';
@@ -74,10 +76,60 @@ class _ScanScreenState extends State<ScanScreen> {
     return GestureDetector(
       onTap: () async {
         if (code != null) {
-          await joinWorkspace(code!.code!);
-          // ignore: use_build_context_synchronously
-          Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (context) => const MyHomePage()));
+          int statusCode = await joinWorkspace(code!.code!);
+
+          if (statusCode == 200) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MyHomePage(),
+              ),
+            );
+          } else {
+            showDialog(
+              context: context,
+              builder: (BuildContext dialogContext) {
+                bool isDarkMode =
+                    Provider.of<ThemeProvider>(context).isDarkMode;
+                return AlertDialog(
+                  title: Text(
+                    "Error",
+                    style: GoogleFonts.inter(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: !isDarkMode
+                            ? AppColor.blackColor
+                            : AppColor.whiteColor),
+                  ),
+                  content: Text(
+                      "Failed to join workspace. Status code: $statusCode",
+                      style: GoogleFonts.inter(
+                          fontSize: 16,
+                          color: !isDarkMode
+                              ? AppColor.blackColor
+                              : AppColor.whiteColor)),
+                  actions: <Widget>[
+                    TextButton(
+                      child: Text("OK",
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            color: AppColor.redColor,
+                          )),
+                      onPressed: () {
+                        Navigator.of(dialogContext).pop(); // Close the dialog
+                      },
+                    ),
+                  ],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  backgroundColor:
+                      isDarkMode ? AppColor.blackColor : AppColor.whiteColor,
+                  elevation: 10,
+                );
+              },
+            );
+          }
         }
       },
       child: Center(

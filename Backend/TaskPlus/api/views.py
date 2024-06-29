@@ -85,6 +85,38 @@ def login(request):
     return Response({"detail": "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(["POST"])
+def change_password(request, member_id):
+    try:
+        member = Member.objects.get(id=member_id)
+    except Member.DoesNotExist:
+        return Response({"detail": "Member not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    # Ensure that the authenticated user is the owner of the member record or a superuser
+   
+    serializer = PasswordChangeSerializer(data=request.data)
+    if serializer.is_valid():
+        old_password = serializer.validated_data['old_password']
+        new_password = serializer.validated_data['new_password']
+
+        user = User.objects.get(username=member.username)
+        
+        if not user.check_password(old_password):
+            return Response({"detail": "Old password is incorrect."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Update password in User model
+        user.set_password(new_password)
+        user.save()
+
+        # Update password in Member model
+        member.password = new_password
+        member.save()
+
+        return Response({"detail": "Password changed successfully."}, status=status.HTTP_200_OK)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 class MemberRetrieveUpdateView(generics.RetrieveUpdateAPIView):
     queryset = Member.objects.all()
@@ -219,12 +251,12 @@ class CommentRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
-class CommentListViewByWorkspace(generics.ListAPIView):
+class CommentListViewByTask(generics.ListAPIView):
     serializer_class = CommentSerializer
 
     def get_queryset(self):
-        workspace_id = self.kwargs['workspace_id']
-        return Comment.objects.filter(workspace__id=workspace_id).order_by('time_posted')
+        task_id = self.kwargs['task_id']
+        return Comment.objects.filter(task_id=task_id).order_by('time_posted')
 
 class CategoryListCreateView(generics.ListCreateAPIView):
     queryset = Category.objects.all()
@@ -265,8 +297,6 @@ class JoinWorkspaceAPIView(APIView):
             return Response({'detail': 'Invalid invite code.'}, status=status.HTTP_400_BAD_REQUEST)
    ##############################################################33 #fix this issue
     def send_notification_to_workspace_members(self, workspace, message):
-        # Replace this with your Firebase Cloud Messaging (FCM) server key
-        fcm_server_key = 'AAAA2XJqoZU:APA91bEN0c0-qzOuaezMX6_hlFPI7j_lGumkHEU8NlQAFF2I9L2m-bhQROssaAktc_2PtOzJ3X0HtFO-DhgS-6OcE17QVJ6ERJ513Dq8yPr2_8E5vf8yKOkFUL5suLn6BLBrWQjfs_x3'
 
         # Get all members in the workspace
         members = Member.objects.filter(workspace=workspace).exclude(device_token__in=['', None])
@@ -274,32 +304,9 @@ class JoinWorkspaceAPIView(APIView):
         # Send a separate notification for each member
         for member in members:
             # Prepare the FCM notification payload for the current member
-            notification_payload = {
-                'registration_ids': [member.device_token],
-                'notification': {
-                    'title': 'Workspace Notification',
-                    'body': message,
-                },
-            }
 
-            # Print the notification payload for the current member
-            print(f'Notification Payload for {member.username}: {notification_payload}')
-
-            # Send the HTTP request to FCM server for the current member
-            response = requests.post(
-                'https://fcm.googleapis.com/fcm/send',
-                json=notification_payload,
-                headers={'Authorization': f'key={fcm_server_key}', 'Content-Type': 'application/json'}
-            )
-
-            # Check the response status for the current member
-            if response.status_code == 200:
-                print(f'Notification sent successfully to {member.username}!')
-            else:
-                print(f'Failed to send notification to {member.username}. Status code:', response.status_code)
-                print(f'Response content for {member.username}:', response.content)
-
-
+            send_notification(member.device_token,"Workspace Notification",message)
+           
 
 
 
@@ -318,32 +325,30 @@ class WorkspaceHistoryAPIView(APIView):
 
 
 
-def send_notification(device_token, title, body, subtitle=None):
-    try:
-        # Your notification sending logic here
-        # Example: Send an HTTP request to FCM
-        fcm_url = 'https://fcm.googleapis.com/fcm/send'
-        headers = {
-            'Content-Type': 'application/json',
-            'Authorization': 'key=AAAA2XJqoZU:APA91bEN0c0-qzOuaezMX6_hlFPI7j_lGumkHEU8NlQAFF2I9L2m-bhQROssaAktc_2PtOzJ3X0HtFO-DhgS-6OcE17QVJ6ERJ513Dq8yPr2_8E5vf8yKOkFUL5suLn6BLBrWQjfs_x3',  # Replace with your FCM server key
-        }
+# def send_notification(device_token, title, body, subtitle=None):
+#     try:
+#         # Your notification sending logic here
+#         # Example: Send an HTTP request to FCM
+#         fcm_url = 'https://fcm.googleapis.com/fcm/send'
+#         headers = {
+#             'Content-Type': 'application/json',
+#             'Authorization': 'key=AAAA2XJqoZU:APA91bEN0c0-qzOuaezMX6_hlFPI7j_lGumkHEU8NlQAFF2I9L2m-bhQROssaAktc_2PtOzJ3X0HtFO-DhgS-6OcE17QVJ6ERJ513Dq8yPr2_8E5vf8yKOkFUL5suLn6BLBrWQjfs_x3',  # Replace with your FCM server key
+#         }
 
-        payload = {
-            'to': device_token,
-            'notification': {
-                'title': title,
-                'body': body,
-                'subtitle': subtitle,
-            }
-        }
+#         payload = {
+#             'to': device_token,
+#             'notification': {
+#                 'title': title,
+#                 'body': body,
+#                 'subtitle': subtitle,
+#             }
+#         }
 
-        response = requests.post(fcm_url, json=payload, headers=headers)
-        print('Sent')
-        return response.status_code
-    except Exception as e:
-        print(f"An error occurred during notification sending: {e}")
-
-
+#         response = requests.post(fcm_url, json=payload, headers=headers)
+#         print('Sent')
+#         return response.status_code
+#     except Exception as e:
+#         print(f"An error occurred during notification sending: {e}")
 
 
 
@@ -385,3 +390,54 @@ class CompleteTaskView(APIView):
         serializer = TaskSerializer(task)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+
+
+
+class CreateWorkspaceView(APIView):
+    def post(self, request):
+        serializer = WorkspaceSerializer(data=request.data)
+        if serializer.is_valid():
+            workspace = serializer.save()
+            member_id = request.data.get('member_id')
+            try:
+                member = Member.objects.get(id=member_id)
+                member.workspace = workspace
+                member.superuser = True
+                member.save()
+            except Member.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+            
+            return Response(status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+
+@api_view(['GET'])
+def get_invite_code(request, workspace_id):
+    workspace = get_object_or_404(Workspace, id=workspace_id)
+    return Response({'invite_code': workspace.invite_code}, status=status.HTTP_200_OK)
+
+
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+
+class AssignTaskView(APIView):
+    def post(self, request, member_id):
+        member = get_object_or_404(Member, id=member_id)
+        task_title = request.data.get('task_title', 'New Task Assigned')
+        task_body = request.data.get('task_body', 'You have been assigned a new task.')
+        
+        if member.device_token:
+            send_notification(member.device_token, task_title, task_body)
+            return Response({'status': 'Notification sent'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'status': 'Member has no device token'}, status=status.HTTP_400_BAD_REQUEST)

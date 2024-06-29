@@ -1,15 +1,19 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mailer/smtp_server/gmail.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:http/http.dart' as http; // Import HTTP package
+import 'package:taskplus/Controller/Authentification.dart';
 import 'package:taskplus/Controller/themeProvider.dart';
-
+import 'package:taskplus/Controller/workspaceService.dart';
 import 'package:taskplus/ui/Widgets/Appbar.dart';
 import 'package:taskplus/ui/Widgets/Button.dart';
 import 'package:mailer/mailer.dart';
+import 'package:mailer/smtp_server/gmail.dart';
 import 'package:taskplus/utils/TextStyle.dart';
 import 'package:taskplus/utils/colors.dart';
+import 'package:taskplus/utils/link.dart';
 
 class InviteScreen extends StatefulWidget {
   const InviteScreen({Key? key}) : super(key: key);
@@ -20,22 +24,42 @@ class InviteScreen extends StatefulWidget {
 
 class _InviteScreenState extends State<InviteScreen> {
   final TextEditingController emailController = TextEditingController();
-  String data = " test";
-  Future<void> sendInvitation(String email, String data) async {
+  String data = "";
+
+  Future<void> fetchInviteCode() async {
+    int workspaceId = await getWorkspaceId();
+    final url = Uri.parse(
+        '$baseurl/get-invite-code/$workspaceId/'); // Replace with your actual API URL
+    final response = await http.get(
+      url,
+      headers: await getHeaders(),
+    );
+
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      setState(() {
+        data = jsonResponse['invite_code']; // Set data from API response
+      });
+    } else {
+      throw Exception('Failed to load invite code');
+    }
+  }
+
+  Future<void> sendInvitation(String email, String inviteCode) async {
     final smtpServer = gmail('islamwork30@gmail.com', 'fubp qfmf ycrm ksyl');
 
     final message = Message()
-      ..from = Address('slimanework30@gmail.com', 'Slimane Houach')
+      ..from = Address('slimanework30@gmail.com', 'Slimane Houache')
       ..recipients.add(email)
       ..subject = 'Invitation to TaskPlus'
       ..html = """
     <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
       <h1 style="color: #333;">Welcome to TaskPlus!</h1>
       <p style="font-size: 18px;">You have been invited to join TaskPlus. Use the following invitation code to complete your registration:</p>
-      <div style="font-size: 24px; color: #2a9d8f; font-weight: bold; margin: 20px 0;">$data</div>
+      <div style="font-size: 24px; color: #2a9d8f; font-weight: bold; margin: 20px 0;">$inviteCode</div>
       <p style="font-size: 18px;">We're excited to have you on board.</p>
       <p style="font-size: 18px;">Best,</p>
-      <p style="font-size: 18px;">Slimane Houach</p>
+      <p style="font-size: 18px;">Slimane Houache</p>
     </div>
   """;
 
@@ -58,6 +82,12 @@ class _InviteScreenState extends State<InviteScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    fetchInviteCode(); // Fetch invite code when screen initializes
+  }
+
+  @override
   Widget build(BuildContext context) {
     bool isDarkMode = Provider.of<ThemeProvider>(context).isDarkMode;
 
@@ -71,9 +101,7 @@ class _InviteScreenState extends State<InviteScreen> {
           child: Container(
             child: Column(
               children: [
-                const SizedBox(
-                  height: 40,
-                ),
+                const SizedBox(height: 40),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -96,7 +124,6 @@ class _InviteScreenState extends State<InviteScreen> {
                                           : AppColor.whiteColor,
                                       fontSize: 18,
                                       fontWeight: FontWeight.w600,
-                                      // Semi-bold (w600)
                                     )),
                                 const SizedBox(height: 20),
                                 TextFormField(
@@ -122,14 +149,12 @@ class _InviteScreenState extends State<InviteScreen> {
                                         color: AppColor.iconsColor),
                                   ),
                                 ),
-                                const SizedBox(
-                                  height: 20,
-                                ),
+                                const SizedBox(height: 20),
                                 CustomElevatedButton(
                                   onPressed: () {
                                     if (emailController.text.isNotEmpty) {
-                                      sendInvitation(
-                                          emailController.text, data);
+                                      sendInvitation(emailController.text,
+                                          data); // Use fetched invite code
                                     } else {
                                       ScaffoldMessenger.of(context)
                                           .showSnackBar(
@@ -157,9 +182,7 @@ class _InviteScreenState extends State<InviteScreen> {
                     ),
                   ],
                 ),
-                SizedBox(
-                  height: 30,
-                ),
+                SizedBox(height: 30),
                 Text(
                   "Scan Qr code",
                   style: GoogleFonts.inter(
@@ -169,9 +192,7 @@ class _InviteScreenState extends State<InviteScreen> {
                         !isDarkMode ? AppColor.blackColor : AppColor.whiteColor,
                   ),
                 ),
-                SizedBox(
-                  height: 10,
-                ),
+                SizedBox(height: 10),
                 Container(
                   padding: const EdgeInsets.all(10.0),
                   child: QrImageView(

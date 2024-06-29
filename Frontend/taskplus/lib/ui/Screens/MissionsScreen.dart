@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -77,10 +78,15 @@ class _MissionScreenState extends State<MissionScreen> {
       int memberId = await getMemberIdFromPrefs();
       MemberService memberService = MemberService(baseUrl: baseurl);
       Member memberModel = await memberService.getMember(memberId);
-      String truncatedUsername = memberModel.name.substring(0, 7);
+
+      // Ensure the substring operation is within the valid range
+      String truncatedUsername = memberModel.name.length >= 7
+          ? memberModel.name.substring(0, 7)
+          : memberModel.name;
 
       setState(() {
         username = truncatedUsername;
+        superUser = memberModel.superuser;
       });
 
       int workspaceId = await getWorkspaceId();
@@ -95,6 +101,7 @@ class _MissionScreenState extends State<MissionScreen> {
   }
 
   String username = "";
+  bool superUser = true;
   String workspace = "";
 
   String? selectedCategory;
@@ -129,144 +136,147 @@ class _MissionScreenState extends State<MissionScreen> {
               Container(
                 height: 110,
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 5, vertical: 10),
-                      width: MediaQuery.of(context).size.width * 0.55,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(5),
-                        border: Border.all(
-                          color:
-                              !isDarkMode ? AppColor.blackColor : Colors.white,
-                        ),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Hello, $username",
-                            style: GoogleFonts.inter(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                              color: !isDarkMode
-                                  ? AppColor.blackColor
-                                  : Colors.white,
-                            ),
-                          ),
-                          Column(
-                            children: [
-                              Container(
-                                child: Row(
-                                  children: [
-                                    Image(
-                                      image:
-                                          AssetImage('assets/images/Logo.png'),
-                                      width: 35,
-                                    ),
-                                    SizedBox(width: 15),
-                                    Expanded(
-                                      child: Text.rich(
-                                        TextSpan(
-                                          children: [
-                                            TextSpan(
-                                              text: "Start working at , ",
-                                              style: GoogleFonts.inter(
-                                                color: !isDarkMode
-                                                    ? AppColor.blackColor
-                                                    : Colors.white,
-                                              ),
-                                            ),
-                                            TextSpan(
-                                              text: workspace,
-                                              style: GoogleFonts.inter(
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.normal,
-                                                color: !isDarkMode
-                                                    ? AppColor.blackColor
-                                                    : Colors.white,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 10),
-                        ],
-                      ),
-                    ),
-                    SizedBox(width: 10),
-                    GestureDetector(
-                      onTap: () async {
-                        int workspaceId = await getWorkspaceId();
-                        final categoryBloc =
-                            BlocProvider.of<CategoryBloc>(context);
-                        final missionBloc =
-                            BlocProvider.of<MissionBloc>(context);
-                        showMissionFormBottomSheet(
-                          context: context,
-                          onSave: (title, priority, ordered, category) {
-                            context.read<MissionBloc>().add(AddMission(
-                                  Mission(
-                                    id: 0,
-                                    title: title,
-                                    priority: priority,
-                                    ordered: ordered,
-                                    timeCreated: DateTime.now(),
-                                    category: category,
-                                    workspace: workspaceId,
-                                  ),
-                                ));
-                          },
-                          categoryBloc: categoryBloc,
-                          missionBloc: missionBloc,
-                        );
-                        print(DateTime.now().toIso8601String());
-                      },
+                    // Left section (Hello, $username)
+                    Expanded(
                       child: Container(
                         padding:
                             EdgeInsets.symmetric(horizontal: 5, vertical: 10),
-                        width: MediaQuery.of(context).size.width * 0.30,
                         decoration: BoxDecoration(
-                          color: AppColor.greenColor,
                           borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: AppColor.whiteColor,
-                                  borderRadius: BorderRadius.circular(50),
-                                ),
-                                child: Icon(
-                                  Icons.add,
-                                  color: AppColor.greenColor,
-                                ),
-                              ),
-                              SizedBox(height: 13),
-                              Text(
-                                "New Mission",
-                                style: GoogleFonts.inter(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColor.whiteColor,
-                                ),
-                              ),
-                            ],
+                          border: Border.all(
+                            color: !isDarkMode
+                                ? AppColor.blackColor
+                                : Colors.white,
                           ),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              "Hello, $username",
+                              style: GoogleFonts.inter(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                                color: !isDarkMode
+                                    ? AppColor.blackColor
+                                    : Colors.white,
+                              ),
+                            ),
+                            SizedBox(height: 10),
+                            Row(
+                              children: [
+                                Image(
+                                  image: AssetImage('assets/images/Logo.png'),
+                                  width: 35,
+                                ),
+                                SizedBox(width: 15),
+                                Expanded(
+                                  child: Text.rich(
+                                    TextSpan(
+                                      children: [
+                                        TextSpan(
+                                          text: "Start working at , ",
+                                          style: GoogleFonts.inter(
+                                            color: !isDarkMode
+                                                ? AppColor.blackColor
+                                                : Colors.white,
+                                          ),
+                                        ),
+                                        TextSpan(
+                                          text: workspace,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.normal,
+                                            color: !isDarkMode
+                                                ? AppColor.blackColor
+                                                : Colors.white,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                     ),
+                    SizedBox(width: 10),
+                    // Right section (New Mission for super users)
+                    if (superUser)
+                      Container(
+                        width: MediaQuery.of(context).size.width * 0.30,
+                        child: GestureDetector(
+                          onTap: () async {
+                            int workspaceId = await getWorkspaceId();
+                            final categoryBloc =
+                                BlocProvider.of<CategoryBloc>(context);
+                            final missionBloc =
+                                BlocProvider.of<MissionBloc>(context);
+                            showMissionFormBottomSheet(
+                              context: context,
+                              onSave: (title, priority, ordered, category) {
+                                context.read<MissionBloc>().add(
+                                      AddMission(
+                                        Mission(
+                                          id: 0,
+                                          title: title,
+                                          priority: priority,
+                                          ordered: ordered,
+                                          timeCreated: DateTime.now(),
+                                          category: category,
+                                          workspace: workspaceId,
+                                        ),
+                                      ),
+                                    );
+                              },
+                              categoryBloc: categoryBloc,
+                              missionBloc: missionBloc,
+                            );
+                            print(DateTime.now().toIso8601String());
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 5, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: AppColor.greenColor,
+                              borderRadius: BorderRadius.circular(5),
+                            ),
+                            child: Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: AppColor.whiteColor,
+                                      borderRadius: BorderRadius.circular(50),
+                                    ),
+                                    child: Icon(
+                                      Icons.add,
+                                      color: AppColor.greenColor,
+                                    ),
+                                  ),
+                                  SizedBox(height: 13),
+                                  Text(
+                                    "New Mission",
+                                    style: GoogleFonts.inter(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColor.whiteColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -382,7 +392,8 @@ class _MissionScreenState extends State<MissionScreen> {
                                   ),
                                 );
 
-                                return MissionBody(context, mission, category);
+                                return MissionBody(
+                                    context, mission, category, superUser);
                               },
                             );
                           } else if (missionState is MissionOperationFailure ||
@@ -411,8 +422,8 @@ class _MissionScreenState extends State<MissionScreen> {
     );
   }
 
-  GestureDetector MissionBody(
-      BuildContext context, Mission mission, Category category) {
+  GestureDetector MissionBody(BuildContext context, Mission mission,
+      Category category, bool superUser) {
     bool isDarkMode = Provider.of<ThemeProvider>(context).isDarkMode;
 
     return GestureDetector(
@@ -423,6 +434,7 @@ class _MissionScreenState extends State<MissionScreen> {
               builder: (context) => MissionDetailsScreen(
                 mission: mission,
                 category: category,
+                superuser: superUser,
               ),
             ));
       },
@@ -456,68 +468,78 @@ class _MissionScreenState extends State<MissionScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            _showDeleteConfirmationDialog(context, mission.id);
-                          },
-                          child: Icon(
-                            Icons.delete,
-                            color: AppColor.redColor,
+                    // Icons section (conditionally displayed)
+                    if (superUser)
+                      Row(
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              _showDeleteConfirmationDialog(
+                                  context, mission.id);
+                            },
+                            child: Icon(
+                              Icons.delete,
+                              color: AppColor.redColor,
+                            ),
                           ),
-                        ),
-                        SizedBox(width: 16),
-                        GestureDetector(
-                          onTap: () {
-                            showEditMissionFormBottomSheet(
-                              context: context,
-                              mission: mission,
-                              onSave: (String title, String priority,
-                                  int category) {
-                                context.read<MissionBloc>().add(
-                                      UpdateMission(
-                                        Mission(
-                                          id: mission.id,
-                                          title: title,
-                                          priority: priority,
-                                          ordered: mission.ordered,
-                                          timeCreated: mission.timeCreated,
-                                          category: category,
-                                          workspace: mission.workspace,
+                          SizedBox(width: 16),
+                          GestureDetector(
+                            onTap: () {
+                              showEditMissionFormBottomSheet(
+                                context: context,
+                                mission: mission,
+                                onSave: (String title, String priority,
+                                    int category) {
+                                  context.read<MissionBloc>().add(
+                                        UpdateMission(
+                                          Mission(
+                                            id: mission.id,
+                                            title: title,
+                                            priority: priority,
+                                            ordered: mission.ordered,
+                                            timeCreated: mission.timeCreated,
+                                            category: category,
+                                            workspace: mission.workspace,
+                                          ),
                                         ),
-                                      ),
-                                    );
-                              },
-                            );
-                          },
-                          child: Icon(
-                            Icons.edit,
-                            color: AppColor.orangeColor,
+                                      );
+                                },
+                              );
+                            },
+                            child: Icon(
+                              Icons.edit,
+                              color: AppColor.orangeColor,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Text(
-                          DateFormat('yyyy-MM-dd HH:mm')
-                              .format(mission.timeCreated),
-                          style: GoogleFonts.inter(
+                        ],
+                      ),
+
+                    // Date section (always at the end)
+                    Expanded(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment
+                            .end, // Align to the end of the row
+                        children: [
+                          Icon(
+                            Icons.date_range_outlined,
+                            color: !isDarkMode
+                                ? AppColor.blackColor
+                                : AppColor.whiteColor,
+                            size: 20,
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            DateFormat('yyyy-MM-dd HH:mm')
+                                .format(mission.timeCreated),
+                            style: GoogleFonts.inter(
                               fontSize: 14,
                               color: !isDarkMode
                                   ? AppColor.blackColor
-                                  : AppColor.whiteColor),
-                        ),
-                        SizedBox(width: 8),
-                        Icon(
-                          Icons.date_range_outlined,
-                          color: !isDarkMode
-                              ? AppColor.blackColor
-                              : AppColor.whiteColor,
-                          size: 20,
-                        ),
-                      ],
+                                  : AppColor.whiteColor,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),

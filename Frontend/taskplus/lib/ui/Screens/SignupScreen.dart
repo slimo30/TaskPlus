@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:taskplus/Controller/themeProvider.dart';
 import 'package:taskplus/utils/TextStyle.dart';
 import 'package:taskplus/utils/colors.dart';
 import 'package:taskplus/Model/user.dart';
@@ -34,8 +36,11 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bool isDarkMode = Provider.of<ThemeProvider>(context).isDarkMode;
+
     return Scaffold(
-      backgroundColor: AppColor.backgroundColor,
+      backgroundColor:
+          isDarkMode ? AppColor.blackColor : AppColor.backgroundColor,
       body: SingleChildScrollView(
         child: SizedBox(
           height: 2000,
@@ -56,7 +61,9 @@ class _SignupScreenState extends State<SignupScreen> {
                 left: MediaQuery.of(context).size.width * 0.1,
                 right: MediaQuery.of(context).size.width * 0.1,
                 child: Container(
-                  color: AppColor.whiteColor,
+                  color: isDarkMode
+                      ? AppColor.darkModeBackgroundColor
+                      : AppColor.whiteColor,
                   width: MediaQuery.of(context).size.width * 0.8,
                   child: Column(
                     children: [
@@ -64,7 +71,16 @@ class _SignupScreenState extends State<SignupScreen> {
                         padding: const EdgeInsets.all(20.0),
                         child: Column(
                           children: [
-                            Text("Sign Up", style: semiBold18),
+                            Text(
+                              "Sign Up",
+                              style: GoogleFonts.inter(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: !isDarkMode
+                                    ? AppColor.blackColor
+                                    : AppColor.whiteColor,
+                              ),
+                            ),
                             const SizedBox(
                               height: 20,
                             ),
@@ -82,8 +98,8 @@ class _SignupScreenState extends State<SignupScreen> {
                                         color: AppColor.blackColor)),
                                 filled: true,
                                 fillColor: AppColor.secondColor,
-                                labelStyle:
-                                     GoogleFonts.inter(color: AppColor.iconsColor),
+                                labelStyle: GoogleFonts.inter(
+                                    color: AppColor.iconsColor),
                                 contentPadding: const EdgeInsets.symmetric(
                                     vertical: 10.0, horizontal: 10.0),
                                 prefixIcon: const Icon(Icons.person,
@@ -107,8 +123,8 @@ class _SignupScreenState extends State<SignupScreen> {
                                         color: AppColor.blackColor)),
                                 filled: true,
                                 fillColor: AppColor.secondColor,
-                                labelStyle:
-                                     GoogleFonts.inter(color: AppColor.iconsColor),
+                                labelStyle: GoogleFonts.inter(
+                                    color: AppColor.iconsColor),
                                 contentPadding: const EdgeInsets.symmetric(
                                     vertical: 10.0, horizontal: 10.0),
                                 prefixIcon: const Icon(Icons.email,
@@ -134,8 +150,8 @@ class _SignupScreenState extends State<SignupScreen> {
                                         color: AppColor.blackColor)),
                                 filled: true,
                                 fillColor: AppColor.secondColor,
-                                labelStyle:
-                                     GoogleFonts.inter(color: AppColor.iconsColor),
+                                labelStyle: GoogleFonts.inter(
+                                    color: AppColor.iconsColor),
                                 contentPadding: const EdgeInsets.symmetric(
                                     vertical: 10.0, horizontal: 10.0),
                                 prefixIcon: const Icon(Icons.lock,
@@ -174,8 +190,8 @@ class _SignupScreenState extends State<SignupScreen> {
                                         color: AppColor.blackColor)),
                                 filled: true,
                                 fillColor: AppColor.secondColor,
-                                labelStyle:
-                                     GoogleFonts.inter(color: AppColor.iconsColor),
+                                labelStyle: GoogleFonts.inter(
+                                    color: AppColor.iconsColor),
                                 contentPadding: const EdgeInsets.symmetric(
                                     vertical: 10.0, horizontal: 10.0),
                                 prefixIcon: const Icon(Icons.lock,
@@ -276,13 +292,22 @@ class _SignupScreenState extends State<SignupScreen> {
                               child: Text.rich(
                                 TextSpan(
                                   text: "Already have an account? ",
-                                  style: Regular15,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.normal,
+                                    color: !isDarkMode
+                                        ? AppColor.blackColor
+                                        : AppColor.whiteColor,
+                                  ),
                                   children: [
                                     TextSpan(
                                       text: "Login!",
                                       style: GoogleFonts.inter(
                                         fontSize: 15,
                                         fontWeight: FontWeight.bold,
+                                        color: !isDarkMode
+                                            ? AppColor.blackColor
+                                            : AppColor.whiteColor,
                                       ),
                                     ),
                                   ],
